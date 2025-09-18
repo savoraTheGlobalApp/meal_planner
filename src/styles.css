@@ -53,11 +53,11 @@ body {
 
 .accent-salad { accent-color: #8b5cf6; }
 
-.chip { @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium; }
-.chip-rose { @apply bg-rose-500/20 text-rose-200 border border-rose-400/30; }
-.chip-amber { @apply bg-amber-500/20 text-amber-200 border border-amber-400/30; }
-.chip-emerald { @apply bg-emerald-500/20 text-emerald-200 border border-emerald-400/30; }
-.chip-violet { @apply bg-violet-500/20 text-violet-200 border border-violet-400/30; }
+.chip { @apply inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-semibold; }
+.chip-rose { @apply bg-rose-100 text-rose-800 border border-rose-300; }
+.chip-amber { @apply bg-amber-100 text-amber-800 border border-amber-300; }
+.chip-emerald { @apply bg-emerald-100 text-emerald-800 border border-emerald-300; }
+.chip-violet { @apply bg-violet-100 text-violet-800 border border-violet-300; }
 
 .regen { @apply btn btn-ghost; }
 .regen:hover { background-image: linear-gradient(90deg, rgba(14,165,233,.15), rgba(236,72,153,.15)); }

@@ -23,9 +23,9 @@ export function WeeklyView() {
 			<div className="overflow-x-auto">
 				<div className="min-w-[720px] grid grid-cols-[120px_repeat(3,1fr)] gap-2">
 					<div></div>
-					<div className="text-center font-medium chip chip-rose">Breakfast</div>
-					<div className="text-center font-medium chip chip-amber">Lunch</div>
-					<div className="text-center font-medium chip chip-violet">Dinner</div>
+					<div className="chip chip-rose">Breakfast</div>
+					<div className="chip chip-amber">Lunch</div>
+					<div className="chip chip-violet">Dinner</div>
 					{days.map((d, i)=> (
 						<>
 							<div key={`day-${i}`} className="font-medium flex items-center">{d}</div>
