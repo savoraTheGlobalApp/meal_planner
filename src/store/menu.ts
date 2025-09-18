@@ -10,8 +10,6 @@ function pickRandom<T>(arr: T[]): T | null {
 }
 
 function generateDay(preferences: Preferences): Meal {
-	console.log('Generating day with preferences:', preferences);
-	
 	const breakfast = pickRandom(preferences.breakfast) ?? 'Breakfast';
 	const lunchDal = pickRandom(preferences.dal) ?? 'Dal';
 	const lunchVeg = pickRandom(preferences.veg) ?? 'Vegetable';
@@ -26,7 +24,6 @@ function generateDay(preferences: Preferences): Meal {
 		dinner: [dinnerDal!, dinnerVeg!, dinnerSalad!, 'Roti/Rice'],
 	};
 	
-	console.log('Generated meal:', meal);
 	return meal;
 }
 
@@ -38,11 +35,17 @@ type MenuState = {
 	week: WeekMenu;
 	generate: (prefs: Preferences) => void;
 	regenerateMeal: (dayIndex: number, which: 'breakfast'|'lunch'|'dinner', prefs: Preferences) => void;
+	clearMenu: () => void;
 };
 
-export const useMenuStore = create<MenuState>((set) => ({
+export const useMenuStore = create<MenuState>((set, get) => ({
 	week: [],
-	generate: (prefs) => set({ week: generateWeek(prefs) }),
+	generate: (prefs) => {
+		const newWeek = generateWeek(prefs);
+		set({ week: newWeek });
+		// Save to localStorage
+		localStorage.setItem('menu', JSON.stringify(newWeek));
+	},
 	regenerateMeal: (dayIndex, which, prefs) => set(state => {
 		const copy = state.week.slice();
 		if (!copy[dayIndex]) return state;
@@ -51,8 +54,25 @@ export const useMenuStore = create<MenuState>((set) => ({
 			...copy[dayIndex],
 			[which]: generated[which],
 		};
+		// Save to localStorage
+		localStorage.setItem('menu', JSON.stringify(copy));
 		return { week: copy };
 	}),
+	clearMenu: () => {
+		set({ week: [] });
+		localStorage.removeItem('menu');
+	}
 }));
+
+// Load menu from localStorage on initialization
+const savedMenu = localStorage.getItem('menu');
+if (savedMenu) {
+	try {
+		const parsed = JSON.parse(savedMenu) as WeekMenu;
+		useMenuStore.setState({ week: parsed });
+	} catch (error) {
+		console.error('Failed to load menu from localStorage:', error);
+	}
+}
 
 
