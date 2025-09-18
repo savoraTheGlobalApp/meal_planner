@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { RotateCcw } from 'lucide-react';
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 
@@ -28,21 +29,27 @@ export function DailyView() {
 						<div className="text-slate-300 text-sm">Breakfast</div>
 						<div className="text-lg font-medium">{day?.breakfast ?? '-'}</div>
 					</div>
-					<button className="regen" onClick={()=>regenerateMeal(i,'breakfast', prefs)}>Regenerate</button>
+					<button className="regen" onClick={()=>regenerateMeal(i,'breakfast', prefs)} title="Regenerate breakfast">
+						<RotateCcw size={16} />
+					</button>
 				</div>
 				<div className="card flex items-center justify-between card-gradient">
 					<div>
 						<div className="text-slate-300 text-sm">Lunch</div>
 						<div className="text-lg font-medium">{day?.lunch?.join(', ') ?? '-'}</div>
 					</div>
-					<button className="regen" onClick={()=>regenerateMeal(i,'lunch', prefs)}>Regenerate</button>
+					<button className="regen" onClick={()=>regenerateMeal(i,'lunch', prefs)} title="Regenerate lunch">
+						<RotateCcw size={16} />
+					</button>
 				</div>
 				<div className="card flex items-center justify-between card-gradient">
 					<div>
 						<div className="text-slate-300 text-sm">Dinner</div>
 						<div className="text-lg font-medium">{day?.dinner?.join(', ') ?? '-'}</div>
 					</div>
-					<button className="regen" onClick={()=>regenerateMeal(i,'dinner', prefs)}>Regenerate</button>
+					<button className="regen" onClick={()=>regenerateMeal(i,'dinner', prefs)} title="Regenerate dinner">
+						<RotateCcw size={16} />
+					</button>
 				</div>
 			</div>
 			<div className="flex justify-between">

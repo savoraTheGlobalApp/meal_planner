@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { RotateCcw } from 'lucide-react';
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 
@@ -30,15 +31,21 @@ export function WeeklyView() {
 							<div key={`day-${i}`} className="font-medium flex items-center">{d}</div>
 							<div key={`b-${i}`} className="card flex items-center justify-between">
 								<span>{week[i]?.breakfast ?? '-'}</span>
-								<button className="regen" onClick={()=>regenerateMeal(i,'breakfast', prefs)}>Regenerate</button>
+								<button className="regen" onClick={()=>regenerateMeal(i,'breakfast', prefs)} title="Regenerate breakfast">
+									<RotateCcw size={16} />
+								</button>
 							</div>
 							<div key={`l-${i}`} className="card flex items-center justify-between">
 								<span>{week[i]?.lunch?.join(', ') ?? '-'}</span>
-								<button className="regen" onClick={()=>regenerateMeal(i,'lunch', prefs)}>Regenerate</button>
+								<button className="regen" onClick={()=>regenerateMeal(i,'lunch', prefs)} title="Regenerate lunch">
+									<RotateCcw size={16} />
+								</button>
 							</div>
 							<div key={`d-${i}`} className="card flex items-center justify-between">
 								<span>{week[i]?.dinner?.join(', ') ?? '-'}</span>
-								<button className="regen" onClick={()=>regenerateMeal(i,'dinner', prefs)}>Regenerate</button>
+								<button className="regen" onClick={()=>regenerateMeal(i,'dinner', prefs)} title="Regenerate dinner">
+									<RotateCcw size={16} />
+								</button>
 							</div>
 						</>
 					))}
