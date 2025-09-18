@@ -26,40 +26,64 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 		item = item.trim();
 		if (!item) return;
 		const exists = get().available[cat].some(i => i.toLowerCase() === item.toLowerCase());
-		set(state => ({
-			available: {
-				...state.available,
-				[cat]: exists ? state.available[cat] : [...state.available[cat], item],
-			},
-			selected: {
-				...state.selected,
-				[cat]: [...new Set([...state.selected[cat], item])],
-			}
-		}));
+		set(state => {
+			const newState = {
+				available: {
+					...state.available,
+					[cat]: exists ? state.available[cat] : [...state.available[cat], item],
+				},
+				selected: {
+					...state.selected,
+					[cat]: [...new Set([...state.selected[cat], item])],
+				}
+			};
+			// Save to localStorage
+			localStorage.setItem('preferences', JSON.stringify(newState.selected));
+			return newState;
+		});
 	},
 	removeCustom: (cat, item) => {
-		set(state => ({
-			available: {
-				...state.available,
-				[cat]: state.available[cat].filter(i => i !== item),
-			},
-			selected: {
-				...state.selected,
-				[cat]: state.selected[cat].filter(i => i !== item),
-			}
-		}));
+		set(state => {
+			const newState = {
+				available: {
+					...state.available,
+					[cat]: state.available[cat].filter(i => i !== item),
+				},
+				selected: {
+					...state.selected,
+					[cat]: state.selected[cat].filter(i => i !== item),
+				}
+			};
+			// Save to localStorage
+			localStorage.setItem('preferences', JSON.stringify(newState.selected));
+			return newState;
+		});
 	},
 	toggleSelected: (cat, item) => {
 		set(state => {
 			const isOn = state.selected[cat].includes(item);
-			return {
+			const newState = {
 				selected: {
 					...state.selected,
 					[cat]: isOn ? state.selected[cat].filter(i => i !== item) : [...state.selected[cat], item],
 				}
 			};
+			// Save to localStorage
+			localStorage.setItem('preferences', JSON.stringify(newState.selected));
+			return newState;
 		});
 	}
 }));
+
+// Load preferences from localStorage on initialization
+const savedPrefs = localStorage.getItem('preferences');
+if (savedPrefs) {
+	try {
+		const parsed = JSON.parse(savedPrefs) as Preferences;
+		usePrefStore.setState({ selected: parsed });
+	} catch (error) {
+		console.error('Failed to load preferences from localStorage:', error);
+	}
+}
 
 

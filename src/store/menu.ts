@@ -10,6 +10,8 @@ function pickRandom<T>(arr: T[]): T | null {
 }
 
 function generateDay(preferences: Preferences): Meal {
+	console.log('Generating day with preferences:', preferences);
+	
 	const breakfast = pickRandom(preferences.breakfast) ?? 'Breakfast';
 	const lunchDal = pickRandom(preferences.dal) ?? 'Dal';
 	const lunchVeg = pickRandom(preferences.veg) ?? 'Vegetable';
@@ -17,11 +19,15 @@ function generateDay(preferences: Preferences): Meal {
 	const dinnerDal = pickRandom(preferences.dal) ?? 'Dal';
 	const dinnerVeg = pickRandom(preferences.veg) ?? 'Vegetable';
 	const dinnerSalad = pickRandom(preferences.salad) ?? 'Fruit/Salad';
-	return {
+	
+	const meal = {
 		breakfast,
 		lunch: [lunchDal!, lunchVeg!, lunchSalad!, 'Roti/Rice'],
 		dinner: [dinnerDal!, dinnerVeg!, dinnerSalad!, 'Roti/Rice'],
 	};
+	
+	console.log('Generated meal:', meal);
+	return meal;
 }
 
 function generateWeek(preferences: Preferences): WeekMenu {
