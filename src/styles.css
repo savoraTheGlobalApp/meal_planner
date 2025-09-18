@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Light, colorful theme */
+:root { color-scheme: light; }
+
+html, body, #root { height: 100%; }
+
+/* Vibrant background */
+body {
+	color: #0f172a;
+	background:
+		linear-gradient(135deg, #fff7ed 0%, #f0f9ff 40%, #ecfeff 60%, #fdf2f8 100%);
+}
+
+/* Smooth cards */
+.card { @apply rounded-xl border border-slate-200 bg-white backdrop-blur p-4 shadow-lg; }
+.card-gradient { @apply relative overflow-hidden; }
+.card-gradient::before {
+	content: '';
+	position: absolute;
+	inset: -1px;
+	background: linear-gradient(120deg, rgba(14,165,233,.4), rgba(236,72,153,.4), rgba(34,197,94,.4));
+	filter: blur(10px);
+	opacity: .25;
+	z-index: -1;
+}
+
+.btn {
+	@apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary { @apply bg-gradient-to-r from-brand to-fuchsia-500 text-white hover:from-brand-dark hover:to-pink-500; }
+.btn-outline { @apply border border-slate-300 hover:bg-slate-100; }
+.btn-ghost { @apply hover:bg-slate-100; }
+
+.input { @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand; }
+
+.container { @apply mx-auto max-w-5xl px-4; }
+
+/* AppShell tweaks */
+.glass { @apply bg-white/70 backdrop-blur border border-slate-200; }
+
+.pill { @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 bg-slate-100; }
+
+/* Colored accents per category */
+.accent-breakfast { accent-color: #f43f5e; }
+
+.accent-dal { accent-color: #f59e0b; }
+
+.accent-veg { accent-color: #22c55e; }
+
+.accent-salad { accent-color: #8b5cf6; }
+
+.chip { @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium; }
+.chip-rose { @apply bg-rose-500/20 text-rose-200 border border-rose-400/30; }
+.chip-amber { @apply bg-amber-500/20 text-amber-200 border border-amber-400/30; }
+.chip-emerald { @apply bg-emerald-500/20 text-emerald-200 border border-emerald-400/30; }
+.chip-violet { @apply bg-violet-500/20 text-violet-200 border border-violet-400/30; }
+
+.regen { @apply btn btn-ghost; }
+.regen:hover { background-image: linear-gradient(90deg, rgba(14,165,233,.15), rgba(236,72,153,.15)); }
+
+
