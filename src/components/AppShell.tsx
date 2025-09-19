@@ -1,10 +1,10 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, User, Salad } from 'lucide-react';
+import { Home as HomeIcon, User, Salad, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { useState, useEffect } from 'react';
 
 export function AppShell() {
-	const { user } = useAuthStore();
+	const { user, loading, logout } = useAuthStore();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -30,9 +30,30 @@ export function AppShell() {
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, [lastScrollY]);
 
-	if (!user && location.pathname !== '/signup') {
-		navigate('/signup');
+	// Show loading spinner while checking authentication
+	if (loading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand"></div>
+			</div>
+		);
 	}
+
+	// Redirect to signup if not authenticated
+	if (!user && !['/signup', '/signin'].includes(location.pathname)) {
+		navigate('/signup');
+		return null;
+	}
+
+	// Don't show shell for auth pages
+	if (['/signup', '/signin'].includes(location.pathname)) {
+		return <Outlet />;
+	}
+
+	const handleLogout = async () => {
+		await logout();
+		navigate('/signup');
+	};
 
 	return (
 		<div className="min-h-screen flex flex-col">
@@ -46,6 +67,12 @@ export function AppShell() {
 					<nav className="hidden md:flex items-center gap-2">
 						<NavLink to="/home" className={({isActive})=>`pill ${isActive? 'ring-1 ring-sky-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><HomeIcon size={18}/> Home</NavLink>
 						<NavLink to="/profile" className={({isActive})=>`pill ${isActive? 'ring-1 ring-fuchsia-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><User size={18}/> Profile</NavLink>
+						<button 
+							onClick={handleLogout}
+							className="pill text-slate-600 hover:ring-1 hover:ring-slate-300"
+						>
+							<LogOut size={18}/> Logout
+						</button>
 					</nav>
 				</div>
 			</header>
