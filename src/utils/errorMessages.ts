@@ -29,9 +29,6 @@ export function getFirebaseErrorMessage(errorCode: string): string {
     case 'auth/weak-password':
       return 'Password is too weak. Please choose a stronger password with at least 6 characters.';
     
-    case 'auth/invalid-email':
-      return 'Please enter a valid email address.';
-    
     case 'auth/operation-not-allowed':
       return 'Email/password accounts are not enabled. Please contact support.';
     

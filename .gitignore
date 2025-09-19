@@ -97,6 +97,29 @@ jspm_packages/
 firebase-debug.log
 firestore-debug.log
 
+# Android build artifacts (keep android/ folder but ignore build outputs)
+android/app/build/
+android/build/
+android/.gradle/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/app/release/
+android/app/debug/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+
+# Android Studio
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/local.properties
+
+# Capacitor
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+
 # Local Netlify folder
 .netlify
 
