@@ -10,7 +10,11 @@ function pickRandom<T>(arr: T[]): T | null {
 }
 
 function generateDay(preferences: Preferences): Meal {
-	const breakfast = pickRandom(preferences.breakfast) ?? 'Breakfast';
+	// Generate breakfast with main item + fruit/salad
+	const mainBreakfast = pickRandom(preferences.breakfast) ?? 'Breakfast';
+	const breakfastFruit = pickRandom(preferences.salad) ?? 'Fruit';
+	const breakfast = `${mainBreakfast}, ${breakfastFruit}`;
+	
 	const lunchDal = pickRandom(preferences.dal) ?? 'Dal';
 	const lunchVeg = pickRandom(preferences.veg) ?? 'Vegetable';
 	const lunchSalad = pickRandom(preferences.salad) ?? 'Fruit/Salad';
@@ -74,5 +78,3 @@ if (savedMenu) {
 		console.error('Failed to load menu from localStorage:', error);
 	}
 }
-
-
