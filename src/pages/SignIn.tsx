@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { Salad } from 'lucide-react';
+import { getFirebaseErrorMessage, extractFirebaseErrorCode } from '../utils/errorMessages';
 
 export function SignIn() {
   const [email, setEmail] = useState('');
@@ -29,7 +30,9 @@ export function SignIn() {
     const result = await signIn({ email, password });
     
     if (!result.success) {
-      setError(result.error || 'Sign in failed');
+      const errorCode = extractFirebaseErrorCode(result.error || '');
+      const userFriendlyMessage = getFirebaseErrorMessage(errorCode);
+      setError(userFriendlyMessage);
     }
     // Navigation will be handled by useEffect when user state updates
   };
