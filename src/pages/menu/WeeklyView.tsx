@@ -10,13 +10,13 @@ const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 export function WeeklyView() {
 	const prefs = usePrefStore(s => s.selected);
-	const { week, generate, regenerateMeal } = useMenuStore();
+	const { week, generate, regenerateMeal, loading } = useMenuStore();
 	const { user } = useAuthStore();
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
 	useEffect(() => {
-		if (!week.length) generate(prefs);
-	}, [week.length, generate, prefs]);
+		if (!week.length && !loading) generate(prefs);
+	}, [week.length, generate, prefs, loading]);
 
 	const handleDownloadPDF = async () => {
 		if (!week.length) return;

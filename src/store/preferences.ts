@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { updateUserPreferences } from '../services/firebaseService';
+import { useAuthStore } from './auth';
 
 export type Category = 'breakfast' | 'dal' | 'veg' | 'salad';
 
@@ -14,76 +16,105 @@ const initialItems: Record<Category, string[]> = {
 type PrefState = {
 	available: Record<Category, string[]>;
 	selected: Preferences;
-	addCustom: (cat: Category, item: string) => void;
-	removeCustom: (cat: Category, item: string) => void;
-	toggleSelected: (cat: Category, item: string) => void;
+	loading: boolean;
+	addCustom: (cat: Category, item: string) => Promise<void>;
+	removeCustom: (cat: Category, item: string) => Promise<void>;
+	toggleSelected: (cat: Category, item: string) => Promise<void>;
+	loadPreferences: (preferences: Preferences) => void;
 };
 
 export const usePrefStore = create<PrefState>((set, get) => ({
 	available: initialItems,
 	selected: { breakfast: [], dal: [], veg: [], salad: [] },
-	addCustom: (cat, item) => {
+	loading: false,
+	addCustom: async (cat, item) => {
 		item = item.trim();
 		if (!item) return;
+		
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		set({ loading: true });
+		
 		const exists = get().available[cat].some(i => i.toLowerCase() === item.toLowerCase());
-		set(state => {
-			const newState = {
-				available: {
-					...state.available,
-					[cat]: exists ? state.available[cat] : [...state.available[cat], item],
-				},
-				selected: {
-					...state.selected,
-					[cat]: [...new Set([...state.selected[cat], item])],
-				}
-			};
-			// Save to localStorage
-			localStorage.setItem('preferences', JSON.stringify(newState.selected));
-			return newState;
-		});
+		const newState = {
+			available: {
+				...get().available,
+				[cat]: exists ? get().available[cat] : [...get().available[cat], item],
+			},
+			selected: {
+				...get().selected,
+				[cat]: [...new Set([...get().selected[cat], item])],
+			}
+		};
+		
+		// Update local state
+		set(newState);
+		
+		// Save to Firebase
+		const { error } = await updateUserPreferences(user.id, newState.selected);
+		if (error) {
+			console.error('Failed to save preferences to Firebase:', error);
+		}
+		
+		set({ loading: false });
 	},
-	removeCustom: (cat, item) => {
-		set(state => {
-			const newState = {
-				available: {
-					...state.available,
-					[cat]: state.available[cat].filter(i => i !== item),
-				},
-				selected: {
-					...state.selected,
-					[cat]: state.selected[cat].filter(i => i !== item),
-				}
-			};
-			// Save to localStorage
-			localStorage.setItem('preferences', JSON.stringify(newState.selected));
-			return newState;
-		});
+	removeCustom: async (cat, item) => {
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		set({ loading: true });
+		
+		const newState = {
+			available: {
+				...get().available,
+				[cat]: get().available[cat].filter(i => i !== item),
+			},
+			selected: {
+				...get().selected,
+				[cat]: get().selected[cat].filter(i => i !== item),
+			}
+		};
+		
+		// Update local state
+		set(newState);
+		
+		// Save to Firebase
+		const { error } = await updateUserPreferences(user.id, newState.selected);
+		if (error) {
+			console.error('Failed to save preferences to Firebase:', error);
+		}
+		
+		set({ loading: false });
 	},
-	toggleSelected: (cat, item) => {
-		set(state => {
-			const isOn = state.selected[cat].includes(item);
-			const newState = {
-				selected: {
-					...state.selected,
-					[cat]: isOn ? state.selected[cat].filter(i => i !== item) : [...state.selected[cat], item],
-				}
-			};
-			// Save to localStorage
-			localStorage.setItem('preferences', JSON.stringify(newState.selected));
-			return newState;
-		});
+	toggleSelected: async (cat, item) => {
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		set({ loading: true });
+		
+		const isOn = get().selected[cat].includes(item);
+		const newState = {
+			selected: {
+				...get().selected,
+				[cat]: isOn ? get().selected[cat].filter(i => i !== item) : [...get().selected[cat], item],
+			}
+		};
+		
+		// Update local state
+		set(newState);
+		
+		// Save to Firebase
+		const { error } = await updateUserPreferences(user.id, newState.selected);
+		if (error) {
+			console.error('Failed to save preferences to Firebase:', error);
+		}
+		
+		set({ loading: false });
+	},
+	loadPreferences: (preferences: Preferences) => {
+		set({ selected: preferences });
 	}
 }));
-
-// Load preferences from localStorage on initialization
-const savedPrefs = localStorage.getItem('preferences');
-if (savedPrefs) {
-	try {
-		const parsed = JSON.parse(savedPrefs) as Preferences;
-		usePrefStore.setState({ selected: parsed });
-	} catch (error) {
-		console.error('Failed to load preferences from localStorage:', error);
-	}
-}
 
 

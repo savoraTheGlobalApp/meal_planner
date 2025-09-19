@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { updateUserMenu, clearUserMenu } from '../services/firebaseService';
+import { useAuthStore } from './auth';
 import type { Preferences } from './preferences';
 
 export type Meal = { breakfast: string; lunch: string[]; dinner: string[] };
@@ -37,44 +39,78 @@ function generateWeek(preferences: Preferences): WeekMenu {
 
 type MenuState = {
 	week: WeekMenu;
-	generate: (prefs: Preferences) => void;
-	regenerateMeal: (dayIndex: number, which: 'breakfast'|'lunch'|'dinner', prefs: Preferences) => void;
-	clearMenu: () => void;
+	loading: boolean;
+	generate: (prefs: Preferences) => Promise<void>;
+	regenerateMeal: (dayIndex: number, which: 'breakfast'|'lunch'|'dinner', prefs: Preferences) => Promise<void>;
+	clearMenu: () => Promise<void>;
+	loadMenu: (menu: WeekMenu) => void;
 };
 
 export const useMenuStore = create<MenuState>((set, get) => ({
 	week: [],
-	generate: (prefs) => {
+	loading: false,
+	generate: async (prefs) => {
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		set({ loading: true });
+		
 		const newWeek = generateWeek(prefs);
 		set({ week: newWeek });
-		// Save to localStorage
-		localStorage.setItem('menu', JSON.stringify(newWeek));
+		
+		// Save to Firebase
+		const { error } = await updateUserMenu(user.id, newWeek);
+		if (error) {
+			console.error('Failed to save menu to Firebase:', error);
+		}
+		
+		set({ loading: false });
 	},
-	regenerateMeal: (dayIndex, which, prefs) => set(state => {
-		const copy = state.week.slice();
-		if (!copy[dayIndex]) return state;
+	regenerateMeal: async (dayIndex, which, prefs) => {
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		set({ loading: true });
+		
+		const copy = get().week.slice();
+		if (!copy[dayIndex]) {
+			set({ loading: false });
+			return;
+		}
+		
 		const generated = generateDay(prefs);
 		copy[dayIndex] = {
 			...copy[dayIndex],
 			[which]: generated[which],
 		};
-		// Save to localStorage
-		localStorage.setItem('menu', JSON.stringify(copy));
-		return { week: copy };
-	}),
-	clearMenu: () => {
+		
+		set({ week: copy });
+		
+		// Save to Firebase
+		const { error } = await updateUserMenu(user.id, copy);
+		if (error) {
+			console.error('Failed to save menu to Firebase:', error);
+		}
+		
+		set({ loading: false });
+	},
+	clearMenu: async () => {
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		set({ loading: true });
+		
 		set({ week: [] });
-		localStorage.removeItem('menu');
+		
+		// Clear from Firebase
+		const { error } = await clearUserMenu(user.id);
+		if (error) {
+			console.error('Failed to clear menu from Firebase:', error);
+		}
+		
+		set({ loading: false });
+	},
+	loadMenu: (menu: WeekMenu) => {
+		set({ week: menu });
 	}
 }));
-
-// Load menu from localStorage on initialization
-const savedMenu = localStorage.getItem('menu');
-if (savedMenu) {
-	try {
-		const parsed = JSON.parse(savedMenu) as WeekMenu;
-		useMenuStore.setState({ week: parsed });
-	} catch (error) {
-		console.error('Failed to load menu from localStorage:', error);
-	}
-}

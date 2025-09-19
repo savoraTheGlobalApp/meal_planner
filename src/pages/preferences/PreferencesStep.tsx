@@ -15,7 +15,7 @@ export function PreferencesStep() {
 	const { step } = useParams();
 	const navigate = useNavigate();
 	const cat = (order.includes(step as Category) ? (step as Category) : 'breakfast');
-	const { available, selected, addCustom, removeCustom, toggleSelected } = usePrefStore();
+	const { available, selected, addCustom, removeCustom, toggleSelected, loading } = usePrefStore();
 	const [custom, setCustom] = useState('');
 
 	const items = useMemo(() => available[cat].slice().sort((a,b)=>a.localeCompare(b)), [available, cat]);
@@ -34,11 +34,11 @@ export function PreferencesStep() {
 						return (
 							<label key={item} className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 cursor-pointer transition ${checked? getSelectedStyle(cat) : 'hover:bg-slate-100'}`}>
 								<div className="flex items-center gap-3">
-									<input type="checkbox" className={catClass(cat)} checked={checked} onChange={()=>toggleSelected(cat,item)} />
+									<input type="checkbox" className={catClass(cat)} checked={checked} onChange={()=>toggleSelected(cat,item)} disabled={loading} />
 									<span>{item}</span>
 								</div>
 								{isCustomOnly && (
-									<button className="btn btn-ghost" onClick={(e)=>{e.preventDefault(); removeCustom(cat,item);}} aria-label={`Remove ${item}`}>
+									<button className="btn btn-ghost" onClick={(e)=>{e.preventDefault(); removeCustom(cat,item);}} aria-label={`Remove ${item}`} disabled={loading}>
 										<X />
 									</button>
 								)}
@@ -47,8 +47,8 @@ export function PreferencesStep() {
 					})}
 				</div>
 				<div className="mt-4 flex gap-2">
-					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'vegetable' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} />
-					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }}>Add</button>
+					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'vegetable' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
+					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
 				<div className="mt-6 flex justify-end">
 					<Link to={nextPath} className="btn btn-primary">{nextLabel[cat]}</Link>
