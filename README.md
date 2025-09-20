@@ -198,6 +198,170 @@ The app can be deployed to any static hosting service:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## 📱 Mobile App (APK) Generation
+
+This web app can be converted into a native Android APK using Capacitor and Android Studio. Follow these steps to generate an APK for Google Play Store.
+
+### Prerequisites for APK Generation
+
+- **Node.js** (v20.11.1 or higher)
+- **Android Studio** (latest version)
+- **Android SDK** (API level 33 or 34)
+- **Java Development Kit (JDK)** (version 11 or higher)
+
+### Step 1: Install Android Studio
+
+1. **Download Android Studio** from: https://developer.android.com/studio
+2. **Install Android Studio** with default settings
+3. **Open Android Studio** and complete the setup wizard
+4. **Install Android SDK** (API level 33 or 34 recommended)
+5. **Set up Android SDK path** in your system environment variables
+
+### Step 2: Install Capacitor (Mobile Framework)
+
+```bash
+# Install Capacitor core and CLI
+npm install @capacitor/core @capacitor/cli
+
+# Install Android platform
+npm install @capacitor/android
+```
+
+### Step 3: Initialize Capacitor
+
+```bash
+# Initialize Capacitor (if not already done)
+npx cap init "Meal Planner" "com.mealplanner.app"
+
+# Add Android platform
+npx cap add android
+```
+
+### Step 4: Build Web App for Production
+
+```bash
+# Build the web app for production
+npm run build
+```
+
+### Step 5: Sync Assets to Android Project
+
+```bash
+# Copy web assets to Android project
+npx cap copy
+
+# Open project in Android Studio
+npx cap open android
+```
+
+### Step 6: Configure Android Project in Android Studio
+
+#### 6.1: Set App Name & Package
+- Go to `android/app/src/main/res/values/strings.xml`
+- Update app name and package ID if needed
+
+#### 6.2: Configure App Icon
+- Replace `android/app/src/main/res/mipmap-*` folders with your app icons
+- Use Android Asset Studio: https://romannurik.github.io/AndroidAssetStudio/
+- Recommended sizes: 48dp, 72dp, 96dp, 144dp, 192dp
+
+#### 6.3: Set Permissions
+- Go to `android/app/src/main/AndroidManifest.xml`
+- Internet permission is already included by default
+- Add other permissions if needed (camera, storage, etc.)
+
+#### 6.4: Configure Firebase for Android
+- Download `google-services.json` from Firebase Console
+- Place it in `android/app/` folder
+- Firebase dependencies are already configured in `build.gradle`
+
+### Step 7: Build APK
+
+#### Debug APK (for testing):
+1. In Android Studio: **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**
+2. APK will be created in `android/app/build/outputs/apk/debug/`
+
+#### Release APK (for Play Store):
+1. **Build** → **Generate Signed Bundle / APK**
+2. Choose **APK**
+3. Create new keystore (for first time) or use existing
+4. Fill in keystore details:
+   - **Key store path**: Choose location for your keystore
+   - **Key store password**: Create a strong password
+   - **Key alias**: Create an alias name
+   - **Key password**: Create a strong password
+5. Build release APK
+6. APK will be created in `android/app/build/outputs/apk/release/`
+
+### Step 8: Test Your APK
+
+1. **Install APK** on Android device
+2. **Test all features:**
+   - Sign up/Sign in
+   - Set preferences
+   - Generate menu
+   - Data persistence
+   - PDF generation
+
+### Step 9: Prepare for Google Play Store
+
+#### Required Files:
+1. **App Icon** (512x512 PNG)
+2. **Feature Graphic** (1024x500 PNG)
+3. **Screenshots** (at least 2, different screen sizes)
+4. **App Description** (4000 characters max)
+5. **Privacy Policy URL**
+
+#### Play Store Requirements:
+1. **Target API Level 33+** (Android 13+)
+2. **64-bit support** (arm64-v8a)
+3. **App Bundle** (preferred over APK)
+4. **Content Rating**
+5. **Data Safety Form**
+
+### Quick Commands Summary
+
+```bash
+# Build web app
+npm run build
+
+# Copy assets to Android
+npx cap copy
+
+# Open in Android Studio
+npx cap open android
+
+# Sync changes (after web updates)
+npx cap sync
+```
+
+### Troubleshooting
+
+#### Common Issues:
+
+1. **"SDK location not found"**
+   - Set `ANDROID_HOME` environment variable
+   - Add Android SDK path to system PATH
+
+2. **"Gradle sync failed"**
+   - Update Android Studio to latest version
+   - Update Gradle wrapper version
+
+3. **"Build failed"**
+   - Clean project: **Build** → **Clean Project**
+   - Rebuild: **Build** → **Rebuild Project**
+
+4. **"App not installing on device"**
+   - Enable "Unknown sources" in device settings
+   - Check if device supports the target API level
+
+### Expected Timeline
+
+- **Setup & Build:** 2-3 hours
+- **Testing & Debugging:** 1-2 hours  
+- **Play Store Preparation:** 2-4 hours
+- **Total:** 5-9 hours
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
