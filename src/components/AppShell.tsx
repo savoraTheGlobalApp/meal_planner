@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, User, Salad, LogOut } from 'lucide-react';
+import { Home as HomeIcon, User, Settings, Salad, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { useState, useEffect } from 'react';
 
@@ -66,6 +66,7 @@ export function AppShell() {
 					</Link>
 					<nav className="hidden md:flex items-center gap-2">
 						<NavLink to="/home" className={({isActive})=>`pill ${isActive? 'ring-1 ring-sky-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><HomeIcon size={18}/> Home</NavLink>
+						<NavLink to="/preferences" className={({isActive})=>`pill ${isActive? 'ring-1 ring-emerald-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><Settings size={18}/> Preferences</NavLink>
 						<NavLink to="/profile" className={({isActive})=>`pill ${isActive? 'ring-1 ring-fuchsia-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><User size={18}/> Profile</NavLink>
 						<button 
 							onClick={handleLogout}
@@ -80,9 +81,12 @@ export function AppShell() {
 				<Outlet />
 			</main>
 			<footer className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-200">
-				<div className="container h-16 grid grid-cols-2">
+				<div className="container h-16 grid grid-cols-3">
 					<NavLink to="/home" className={({isActive})=>`flex items-center justify-center gap-2 transition-colors ${isActive? 'text-brand bg-slate-100':'text-slate-600 hover:text-slate-900'}`}>
 						<HomeIcon size={20} /> Home
+					</NavLink>
+					<NavLink to="/preferences" className={({isActive})=>`flex items-center justify-center gap-2 transition-colors ${isActive? 'text-emerald-600 bg-emerald-50':'text-slate-600 hover:text-slate-900'}`}>
+						<Settings size={20} /> Preferences
 					</NavLink>
 					<NavLink to="/profile" className={({isActive})=>`flex items-center justify-center gap-2 transition-colors ${isActive? 'text-brand bg-slate-100':'text-slate-600 hover:text-slate-900'}`}>
 						<User size={20} /> Profile

@@ -5,6 +5,7 @@ import { SignUp } from './pages/SignUp';
 import { SignIn } from './pages/SignIn';
 import { Home } from './pages/Home';
 import { Profile } from './pages/Profile';
+import { Preferences } from './pages/Preferences';
 import { PreferencesStep } from './pages/preferences/PreferencesStep';
 import { WeeklyView } from './pages/menu/WeeklyView';
 import { DailyView } from './pages/menu/DailyView';
@@ -24,6 +25,7 @@ export default function App() {
 			<Route element={<AppShell />}>
 				<Route index element={<Navigate to="/home" replace />} />
 				<Route path="/home" element={<Home />} />
+				<Route path="/preferences" element={<Preferences />} />
 				<Route path="/profile" element={<Profile />} />
 				<Route path="/preferences/:step" element={<PreferencesStep />} />
 				<Route path="/menu/weekly" element={<WeeklyView />} />
