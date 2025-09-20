@@ -35,24 +35,25 @@ export function Preferences() {
 				</div>
 			</div>
 
-			{/* Quick Edit Button */}
-			<div className="card bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200">
-				<div className="flex items-center justify-between">
-					<div>
-						<h3 className="text-lg font-semibold text-slate-800 mb-1">Want to make changes?</h3>
-						<p className="text-slate-600 text-sm">Update your food preferences anytime</p>
+			{/* Summary Stats */}
+			{totalSelected > 0 && (
+				<div className="card bg-gradient-to-r from-emerald-50 to-teal-100 border-emerald-200">
+					<div className="text-center">
+						<h3 className="text-lg font-semibold text-slate-800 mb-2">Preference Summary</h3>
+						<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+							{categories.map(({ key, label, color, icon }) => (
+								<div key={key} className="text-center">
+									<div className="text-2xl mb-1">{icon}</div>
+									<div className={`chip chip-${color} justify-center`}>
+										{selected[key].length}
+									</div>
+									<p className="text-xs text-slate-600 mt-1">{label}</p>
+								</div>
+							))}
+						</div>
 					</div>
-					<Link 
-						to="/preferences/breakfast" 
-						className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-					>
-						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-						</svg>
-						Edit Preferences
-					</Link>
 				</div>
-			</div>
+			)}
 
 			{/* Categories */}
 			<div className="space-y-4">
@@ -101,25 +102,24 @@ export function Preferences() {
 				})}
 			</div>
 
-			{/* Summary Stats */}
-			{totalSelected > 0 && (
-				<div className="card bg-gradient-to-r from-emerald-50 to-teal-100 border-emerald-200">
-					<div className="text-center">
-						<h3 className="text-lg font-semibold text-slate-800 mb-2">Preference Summary</h3>
-						<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-							{categories.map(({ key, label, color, icon }) => (
-								<div key={key} className="text-center">
-									<div className="text-2xl mb-1">{icon}</div>
-									<div className={`chip chip-${color} justify-center`}>
-										{selected[key].length}
-									</div>
-									<p className="text-xs text-slate-600 mt-1">{label}</p>
-								</div>
-							))}
-						</div>
+			{/* Quick Edit Button */}
+			<div className="card bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200">
+				<div className="flex items-center justify-between">
+					<div>
+						<h3 className="text-lg font-semibold text-slate-800 mb-1">Want to make changes?</h3>
+						<p className="text-slate-600 text-sm">Update your food preferences anytime</p>
 					</div>
+					<Link 
+						to="/preferences/breakfast" 
+						className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+					>
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+						</svg>
+						Edit Preferences
+					</Link>
 				</div>
-			)}
+			</div>
 		</div>
 	);
 }
