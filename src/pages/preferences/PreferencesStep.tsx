@@ -68,7 +68,7 @@ const initialBuiltIn: Record<Category, string[]> = {
 	breakfast: ['Poha','Daliya','Upma','Aloo Paratha','Paneer Paratha','Gobhi Paratha','Masala Dosa','Idli Sambhar','Veg Sandwich','Cornflakes'],
 	dal: ['Moong Dal','Masoor Dal','Chana Dal','Toor (Arhar) Dal','Urad Dal','Rajma','Chhole','Lobia'],
 	veg: ['Potato','Paneer','Mushroom','Spinach','Cauliflower','Broccoli','Cabbage','Beans','Peas','Brinjal','Okra (Bhindi)','Capsicum','Bottle Gourd (Lauki)'],
-	salad: ['Apple','Banana','Carrot','Beetroot','Papaya','Orange','Grapes','Mango','Pomegranate'],
+	salad: ['Apple','Banana','Carrot','Beetroot','Papaya','Orange','Grapes','Pomegranate'],
 };
 
 function catClass(cat: Category) {
