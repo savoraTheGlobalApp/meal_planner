@@ -10,6 +10,9 @@
     "lint": "echo 'no linter configured'"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
     "clsx": "^2.1.1",
     "firebase": "^12.3.0",
     "html2canvas": "^1.4.1",
