@@ -77,19 +77,19 @@ export function AppShell() {
 					</nav>
 				</div>
 			</header>
-			<main className="flex-1 container py-6 pb-20 md:pb-6">
+			<main className="flex-1 container py-6 pb-16 md:pb-6">
 				<Outlet />
 			</main>
 			<footer className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-200">
-				<div className="container h-16 grid grid-cols-3">
-					<NavLink to="/home" className={({isActive})=>`flex items-center justify-center gap-2 transition-colors ${isActive? 'text-brand bg-slate-100':'text-slate-600 hover:text-slate-900'}`}>
-						<HomeIcon size={20} /> Home
+				<div className="container h-12 grid grid-cols-3">
+					<NavLink to="/home" className={({isActive})=>`flex items-center justify-center transition-colors ${isActive? 'text-blue-600':'text-slate-400 hover:text-slate-600'}`}>
+						<HomeIcon size={22} fill={location.pathname === '/home' ? 'currentColor' : 'none'} />
 					</NavLink>
-					<NavLink to="/preferences" className={({isActive})=>`flex items-center justify-center gap-2 transition-colors ${isActive? 'text-emerald-600 bg-emerald-50':'text-slate-600 hover:text-slate-900'}`}>
-						<Heart size={20} /> Preferences
+					<NavLink to="/preferences" className={({isActive})=>`flex items-center justify-center transition-colors ${isActive? 'text-emerald-600':'text-slate-400 hover:text-slate-600'}`}>
+						<Heart size={22} fill={location.pathname === '/preferences' ? 'currentColor' : 'none'} />
 					</NavLink>
-					<NavLink to="/profile" className={({isActive})=>`flex items-center justify-center gap-2 transition-colors ${isActive? 'text-brand bg-slate-100':'text-slate-600 hover:text-slate-900'}`}>
-						<User size={20} /> Profile
+					<NavLink to="/profile" className={({isActive})=>`flex items-center justify-center transition-colors ${isActive? 'text-purple-600':'text-slate-400 hover:text-slate-600'}`}>
+						<User size={22} fill={location.pathname === '/profile' ? 'currentColor' : 'none'} />
 					</NavLink>
 				</div>
 			</footer>
