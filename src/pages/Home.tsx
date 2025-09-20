@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom';
 import { usePrefStore } from '@/store/preferences';
+import { useMenuStore } from '@/store/menu';
 
 export function Home() {
 	const selected = usePrefStore(s => s.selected);
-	const hasPreferences = selected.breakfast.length + selected.dal.length + selected.veg.length + selected.salad.length > 0;
+	const { week } = useMenuStore();
+	const hasMenu = week.length > 0;
 	
 	return (
 		<div className="space-y-6">
-			{/* Preferences Card */}
-			<div className="card bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
+			{/* Show Preferences Card only if no menu has been generated */}
+			{!hasMenu && (
+				<div className="card bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
 				<div>
 					<h2 className="text-xl font-bold text-slate-800 mb-2">Set Your Preferences</h2>
 					<p className="text-slate-600 mb-4">Tell us about your food choices and dietary preferences to create your personalized meal plan.</p>
@@ -23,9 +26,10 @@ export function Home() {
 					</Link>
 				</div>
 			</div>
+			)}
 
-			{/* Menu Viewing Card - Only show if preferences are set */}
-			{hasPreferences && (
+			{/* Show Menu Viewing Card only if menu has been generated */}
+			{hasMenu && (
 				<div className="card bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200">
 					<div>
 						<h2 className="text-xl font-bold text-slate-800 mb-2">View Your Menu</h2>
