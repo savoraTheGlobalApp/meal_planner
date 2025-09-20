@@ -4,6 +4,8 @@ import { RotateCcw } from 'lucide-react';
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 
+const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
 export function DailyView() {
 	const { dayIndex = '0' } = useParams();
 	const i = Math.max(0, Math.min(6, parseInt(dayIndex))); 
@@ -20,7 +22,7 @@ export function DailyView() {
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
-				<h2 className="text-xl font-semibold">Day {i+1}</h2>
+				<h2 className="text-xl font-semibold">{days[i]}</h2>
 				<Link to="/menu/weekly" className="btn btn-outline">Weekly view</Link>
 			</div>
 			<div className="space-y-3">
