@@ -13,6 +13,28 @@ export function DailyView() {
 	const { week, generate, regenerateMeal } = useMenuStore();
 	const navigate = useNavigate();
 
+	// Get today's date and calculate the date for the current day
+	const today = new Date();
+	const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert Sunday=0 to Sunday=6
+	
+	// Calculate the date for the current day index
+	const getDateForDayIndex = (dayIndex: number) => {
+		const date = new Date(today);
+		const daysFromToday = dayIndex - todayIndex;
+		
+		// If the day is in the past (before today), add 7 days to get next week's date
+		if (daysFromToday < 0) {
+			date.setDate(today.getDate() + daysFromToday + 7);
+		} else {
+			date.setDate(today.getDate() + daysFromToday);
+		}
+		
+		return date;
+	};
+
+	const currentDate = getDateForDayIndex(i);
+	const isToday = i === todayIndex;
+
 	useEffect(() => {
 		if (!week.length) generate(prefs);
 	}, [week.length, generate, prefs]);
@@ -23,7 +45,15 @@ export function DailyView() {
 		<div className="space-y-4">
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-xl font-semibold">{days[i]}</h2>
+				<div>
+					<h2 className={`text-xl font-semibold ${isToday ? 'text-blue-600' : 'text-slate-800'}`}>
+						{days[i]}
+					</h2>
+					<p className="text-sm text-slate-500">
+						{currentDate.getDate()}/{currentDate.getMonth() + 1}
+						{isToday && <span className="ml-2 text-blue-600 font-medium">(Today)</span>}
+					</p>
+				</div>
 				<Link to="/menu/weekly" className="btn btn-outline">Weekly view</Link>
 			</div>
 

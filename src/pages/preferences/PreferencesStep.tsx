@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Category, usePrefStore } from '@/store/preferences';
+import { useMenuStore } from '@/store/menu';
 import { X } from 'lucide-react';
 
 const order: Category[] = ['breakfast','dal','veg','salad'];
@@ -16,11 +17,28 @@ export function PreferencesStep() {
 	const navigate = useNavigate();
 	const cat = (order.includes(step as Category) ? (step as Category) : 'breakfast');
 	const { available, selected, addCustom, removeCustom, toggleSelected, loading } = usePrefStore();
+	const { week, generate } = useMenuStore();
 	const [custom, setCustom] = useState('');
 
 	const items = useMemo(() => available[cat].slice().sort((a,b)=>a.localeCompare(b)), [available, cat]);
 	const isLast = cat === 'salad';
 	const nextPath = isLast ? '/menu/weekly' : `/preferences/${order[order.indexOf(cat)+1]}`;
+	
+	// Check if menu already exists
+	const hasMenu = week.length > 0;
+	
+	// Handle the final button click (generate/regenerate menu)
+	const handleFinalButtonClick = async () => {
+		if (isLast) {
+			// Generate or regenerate menu
+			await generate(selected);
+			// Navigate to weekly view
+			navigate('/menu/weekly');
+		} else {
+			// Navigate to next step
+			navigate(nextPath);
+		}
+	};
 
 	return (
 		<div className="max-w-2xl space-y-4">
@@ -51,7 +69,16 @@ export function PreferencesStep() {
 					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
 				<div className="mt-6 flex justify-end">
-					<Link to={nextPath} className="btn btn-primary">{nextLabel[cat]}</Link>
+					<button 
+						onClick={handleFinalButtonClick}
+						disabled={loading}
+						className="btn btn-primary"
+					>
+						{isLast 
+							? (hasMenu ? 'Regenerate Menu' : 'Generate 7-Day Menu')
+							: nextLabel[cat]
+						}
+					</button>
 				</div>
 			</div>
 			<div className="flex items-center justify-between">

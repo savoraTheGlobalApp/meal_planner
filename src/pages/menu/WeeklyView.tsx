@@ -13,10 +13,45 @@ export function WeeklyView() {
 	const { week, generate, regenerateMeal, loading } = useMenuStore();
 	const { user } = useAuthStore();
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+	// No need for generation tracking - menu only generates on manual button click
 
-	useEffect(() => {
-		if (!week.length && !loading) generate(prefs);
-	}, [week.length, generate, prefs, loading]);
+	// Get today's date and calculate week dates
+	const today = new Date();
+	const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert Sunday=0 to Sunday=6
+	
+	// Create array of dates starting from today
+	const getWeekDates = () => {
+		const dates = [];
+		for (let i = 0; i < 7; i++) {
+			const date = new Date(today);
+			date.setDate(today.getDate() + i);
+			dates.push(date);
+		}
+		return dates;
+	};
+
+	const weekDates = getWeekDates();
+	
+	// Reorder days to start with today
+	const getOrderedDays = () => {
+		const orderedDays = [];
+		const orderedDates = [];
+		const orderedWeek = [];
+		
+		for (let i = 0; i < 7; i++) {
+			const dayIndex = (todayIndex + i) % 7;
+			orderedDays.push(days[dayIndex]);
+			orderedDates.push(weekDates[i]);
+			orderedWeek.push(week[dayIndex]);
+		}
+		
+		return { orderedDays, orderedDates, orderedWeek };
+	};
+
+	const { orderedDays, orderedDates, orderedWeek } = getOrderedDays();
+
+	// Check if user has preferences set
+	const hasPreferences = prefs.breakfast.length > 0 || prefs.dal.length > 0 || prefs.veg.length > 0 || prefs.salad.length > 0;
 
 	const handleDownloadPDF = async () => {
 		if (!week.length) return;
@@ -45,9 +80,58 @@ export function WeeklyView() {
 						<Download size={16} />
 						{isGeneratingPDF ? 'Generating...' : 'Download PDF'}
 					</button>
-					<Link to="/menu/daily/0" className="btn btn-outline">Daily view</Link>
+					<Link to={`/menu/daily/${todayIndex}`} className="btn btn-outline">Daily view</Link>
 				</div>
 			</div>
+
+			{/* Generate Menu Button - Always show when preferences are set */}
+			{hasPreferences && (
+				<div className="card bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200">
+					<div className="text-center py-6">
+						<div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+							<svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+						</div>
+						<h3 className="text-lg font-semibold text-slate-800 mb-2">
+							{week.length > 0 ? 'Regenerate Menu' : 'Generate 7-Day Menu'}
+						</h3>
+						<p className="text-slate-600 mb-4">
+							{week.length > 0 
+								? 'Your current menu will be replaced with a new one based on your current preferences.'
+								: 'Your preferences are set! Click below to generate your personalized 7-day meal plan.'
+							}
+						</p>
+						<button 
+							onClick={() => {
+								console.log('Generate Menu button clicked');
+								console.log('Current preferences:', prefs);
+								generate(prefs);
+							}}
+							disabled={loading}
+							className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+							{loading ? 'Generating...' : (week.length > 0 ? 'Regenerate Menu' : 'Generate 7-Day Menu')}
+						</button>
+						<button 
+							onClick={() => {
+								console.log('Manual Debug - Current preferences:', prefs);
+								console.log('Manual Debug - Breakfast:', prefs.breakfast);
+								console.log('Manual Debug - Dal:', prefs.dal);
+								console.log('Manual Debug - Veg:', prefs.veg);
+								console.log('Manual Debug - Salad:', prefs.salad);
+								alert(`Preferences Debug:\nBreakfast: ${prefs.breakfast.length} items\nDal: ${prefs.dal.length} items\nVeg: ${prefs.veg.length} items\nSalad: ${prefs.salad.length} items`);
+							}}
+							className="mt-2 inline-flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors"
+						>
+							Debug Preferences
+						</button>
+					</div>
+				</div>
+			)}
 
 			{/* Desktop/Tablet View - Grid Layout */}
 			<div className="hidden lg:block">
@@ -59,50 +143,70 @@ export function WeeklyView() {
 					<div className="chip chip-violet text-center">Dinner</div>
 					
 					{/* Data Rows */}
-					{days.map((dayName, i) => (
-						<>
-							<div key={`day-${i}`} className="font-semibold text-slate-700 flex items-center py-2">
-								{dayName}
-							</div>
-							<div key={`b-${i}`} className="card-compact">
-								<div className="flex items-center justify-between">
-									<span className="text-sm truncate pr-2">{week[i]?.breakfast ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(i,'breakfast', prefs)} title="Regenerate breakfast">
-										<RotateCcw size={14} />
-									</button>
+					{orderedDays.map((dayName, i) => {
+						const originalIndex = days.indexOf(dayName);
+						const date = orderedDates[i];
+						const isToday = i === 0;
+						
+						return (
+							<>
+								<div key={`day-${i}`} className={`font-semibold flex flex-col py-2 ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
+									<span>{dayName}</span>
+									<span className="text-xs text-slate-500">
+										{date.getDate()}/{date.getMonth() + 1}
+										{isToday && <span className="ml-1 text-blue-600 font-medium">(Today)</span>}
+									</span>
 								</div>
-							</div>
-							<div key={`l-${i}`} className="card-compact">
-								<div className="flex items-center justify-between">
-									<span className="text-sm truncate pr-2">{week[i]?.lunch?.join(', ') ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(i,'lunch', prefs)} title="Regenerate lunch">
-										<RotateCcw size={14} />
-									</button>
+								<div key={`b-${i}`} className={`card-compact ${isToday ? 'ring-2 ring-blue-200' : ''}`}>
+									<div className="flex items-center justify-between">
+										<span className="text-sm truncate pr-2">{orderedWeek[i]?.breakfast ?? '-'}</span>
+										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} title="Regenerate breakfast">
+											<RotateCcw size={14} />
+										</button>
+									</div>
 								</div>
-							</div>
-							<div key={`d-${i}`} className="card-compact">
-								<div className="flex items-center justify-between">
-									<span className="text-sm truncate pr-2">{week[i]?.dinner?.join(', ') ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(i,'dinner', prefs)} title="Regenerate dinner">
-										<RotateCcw size={14} />
-									</button>
+								<div key={`l-${i}`} className={`card-compact ${isToday ? 'ring-2 ring-blue-200' : ''}`}>
+									<div className="flex items-center justify-between">
+										<span className="text-sm truncate pr-2">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
+										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} title="Regenerate lunch">
+											<RotateCcw size={14} />
+										</button>
+									</div>
 								</div>
-							</div>
-						</>
-					))}
+								<div key={`d-${i}`} className={`card-compact ${isToday ? 'ring-2 ring-blue-200' : ''}`}>
+									<div className="flex items-center justify-between">
+										<span className="text-sm truncate pr-2">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
+										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} title="Regenerate dinner">
+											<RotateCcw size={14} />
+										</button>
+									</div>
+								</div>
+							</>
+						);
+					})}
 				</div>
 			</div>
 
 			{/* Mobile/Tablet View - Card Layout */}
 			<div className="lg:hidden space-y-4">
-				{days.map((dayName, i) => (
-					<div key={dayName} className="card">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="font-semibold text-lg text-slate-800">{dayName}</h3>
-							<Link to={`/menu/daily/${i}`} className="text-sm text-brand hover:underline font-medium">
-								View Details
-							</Link>
-						</div>
+				{orderedDays.map((dayName, i) => {
+					const originalIndex = days.indexOf(dayName);
+					const date = orderedDates[i];
+					const isToday = i === 0;
+					
+					return (
+						<div key={dayName} className={`card ${isToday ? 'ring-2 ring-blue-200 bg-blue-50' : ''}`}>
+							<div className="flex items-center justify-between mb-4">
+								<div>
+									<h3 className={`font-semibold text-lg ${isToday ? 'text-blue-600' : 'text-slate-800'}`}>
+										{dayName}
+									</h3>
+									<p className="text-sm text-slate-500">{date.getDate()}/{date.getMonth() + 1}</p>
+								</div>
+								<Link to={`/menu/daily/${originalIndex}`} className="text-sm text-brand hover:underline font-medium">
+									View Details
+								</Link>
+							</div>
 						
 						<div className="space-y-3">
 							{/* Breakfast */}
@@ -111,8 +215,8 @@ export function WeeklyView() {
 									<span className="text-sm font-semibold text-slate-700">Breakfast</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-sm text-slate-600 leading-relaxed">{week[i]?.breakfast ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(i,'breakfast', prefs)} title="Regenerate breakfast">
+									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.breakfast ?? '-'}</span>
+									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} title="Regenerate breakfast">
 										<RotateCcw size={14} />
 									</button>
 								</div>
@@ -124,8 +228,8 @@ export function WeeklyView() {
 									<span className="text-sm font-semibold text-slate-700">Lunch</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-sm text-slate-600 leading-relaxed">{week[i]?.lunch?.join(', ') ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(i,'lunch', prefs)} title="Regenerate lunch">
+									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
+									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} title="Regenerate lunch">
 										<RotateCcw size={14} />
 									</button>
 								</div>
@@ -137,15 +241,16 @@ export function WeeklyView() {
 									<span className="text-sm font-semibold text-slate-700">Dinner</span>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-sm text-slate-600 leading-relaxed">{week[i]?.dinner?.join(', ') ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(i,'dinner', prefs)} title="Regenerate dinner">
+									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
+									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} title="Regenerate dinner">
 										<RotateCcw size={14} />
 									</button>
 								</div>
 							</div>
 						</div>
 					</div>
-				))}
+					);
+				})}
 			</div>
 		</div>
 	);

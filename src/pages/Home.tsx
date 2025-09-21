@@ -7,6 +7,10 @@ export function Home() {
 	const { week } = useMenuStore();
 	const hasMenu = week.length > 0;
 	
+	// Get today's day index for navigation
+	const today = new Date();
+	const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert Sunday=0 to Sunday=6
+	
 	return (
 		<div className="space-y-6">
 			{/* Show Preferences Card only if no menu has been generated */}
@@ -45,7 +49,7 @@ export function Home() {
 								Weekly View
 							</Link>
 							<Link 
-								to="/menu/daily/0" 
+								to={`/menu/daily/${todayIndex}`} 
 								className="w-full inline-flex items-center justify-center gap-2 bg-white text-emerald-600 border-2 border-emerald-200 px-6 py-3 rounded-xl font-semibold hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
 							>
 								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
