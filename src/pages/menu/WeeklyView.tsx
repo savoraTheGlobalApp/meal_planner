@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RotateCcw, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 import { useAuthStore } from '@/store/auth';
@@ -84,54 +84,6 @@ export function WeeklyView() {
 				</div>
 			</div>
 
-			{/* Generate Menu Button - Always show when preferences are set */}
-			{hasPreferences && (
-				<div className="card bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200">
-					<div className="text-center py-6">
-						<div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-							<svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-							</svg>
-						</div>
-						<h3 className="text-lg font-semibold text-slate-800 mb-2">
-							{week.length > 0 ? 'Regenerate Menu' : 'Generate 7-Day Menu'}
-						</h3>
-						<p className="text-slate-600 mb-4">
-							{week.length > 0 
-								? 'Your current menu will be replaced with a new one based on your current preferences.'
-								: 'Your preferences are set! Click below to generate your personalized 7-day meal plan.'
-							}
-						</p>
-						<button 
-							onClick={() => {
-								console.log('Generate Menu button clicked');
-								console.log('Current preferences:', prefs);
-								generate(prefs);
-							}}
-							disabled={loading}
-							className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-							</svg>
-							{loading ? 'Generating...' : (week.length > 0 ? 'Regenerate Menu' : 'Generate 7-Day Menu')}
-						</button>
-						<button 
-							onClick={() => {
-								console.log('Manual Debug - Current preferences:', prefs);
-								console.log('Manual Debug - Breakfast:', prefs.breakfast);
-								console.log('Manual Debug - Dal:', prefs.dal);
-								console.log('Manual Debug - Veg:', prefs.veg);
-								console.log('Manual Debug - Salad:', prefs.salad);
-								alert(`Preferences Debug:\nBreakfast: ${prefs.breakfast.length} items\nDal: ${prefs.dal.length} items\nVeg: ${prefs.veg.length} items\nSalad: ${prefs.salad.length} items`);
-							}}
-							className="mt-2 inline-flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors"
-						>
-							Debug Preferences
-						</button>
-					</div>
-				</div>
-			)}
 
 			{/* Desktop/Tablet View - Grid Layout */}
 			<div className="hidden lg:block">
@@ -161,7 +113,9 @@ export function WeeklyView() {
 									<div className="flex items-center justify-between">
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.breakfast ?? '-'}</span>
 										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} title="Regenerate breakfast">
-											<RotateCcw size={14} />
+											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
 										</button>
 									</div>
 								</div>
@@ -169,7 +123,9 @@ export function WeeklyView() {
 									<div className="flex items-center justify-between">
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
 										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} title="Regenerate lunch">
-											<RotateCcw size={14} />
+											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
 										</button>
 									</div>
 								</div>
@@ -177,7 +133,9 @@ export function WeeklyView() {
 									<div className="flex items-center justify-between">
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
 										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} title="Regenerate dinner">
-											<RotateCcw size={14} />
+											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
 										</button>
 									</div>
 								</div>
@@ -217,7 +175,9 @@ export function WeeklyView() {
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.breakfast ?? '-'}</span>
 									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} title="Regenerate breakfast">
-										<RotateCcw size={14} />
+										<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+										</svg>
 									</button>
 								</div>
 							</div>
@@ -230,7 +190,9 @@ export function WeeklyView() {
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
 									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} title="Regenerate lunch">
-										<RotateCcw size={14} />
+										<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+										</svg>
 									</button>
 								</div>
 							</div>
@@ -243,7 +205,9 @@ export function WeeklyView() {
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
 									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} title="Regenerate dinner">
-										<RotateCcw size={14} />
+										<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+										</svg>
 									</button>
 								</div>
 							</div>
@@ -252,6 +216,37 @@ export function WeeklyView() {
 					);
 				})}
 			</div>
+
+			{/* Regenerate Menu Card - Show at bottom when preferences are set */}
+			{hasPreferences && (
+				<div className="card bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200">
+					<div className="text-center py-6">
+						<h3 className="text-lg font-semibold text-slate-800 mb-2">
+							{week.length > 0 ? 'Try a different menu?' : 'Generate 7-Day Menu'}
+						</h3>
+						<p className="text-slate-600 mb-4">
+							{week.length > 0 
+								? 'Get new meal combinations with your preferences.'
+								: 'Your preferences are set! Click below to generate your personalized 7-day meal plan.'
+							}
+						</p>
+						<button 
+							onClick={() => {
+								console.log('Generate Menu button clicked');
+								console.log('Current preferences:', prefs);
+								generate(prefs);
+							}}
+							disabled={loading}
+							className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+							{loading ? 'Generating...' : (week.length > 0 ? 'Regenerate Menu' : 'Generate 7-Day Menu')}
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

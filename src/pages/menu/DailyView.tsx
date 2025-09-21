@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { RotateCcw } from 'lucide-react';
+// Removed RotateCcw import - now using custom SVG icon
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 
@@ -71,7 +71,9 @@ export function DailyView() {
 							onClick={()=>regenerateMeal(i,'breakfast', prefs)} 
 							title="Regenerate breakfast"
 						>
-							<RotateCcw size={16} />
+							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
 						</button>
 					</div>
 				</div>
@@ -88,7 +90,9 @@ export function DailyView() {
 							onClick={()=>regenerateMeal(i,'lunch', prefs)} 
 							title="Regenerate lunch"
 						>
-							<RotateCcw size={16} />
+							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
 						</button>
 					</div>
 				</div>
@@ -105,7 +109,9 @@ export function DailyView() {
 							onClick={()=>regenerateMeal(i,'dinner', prefs)} 
 							title="Regenerate dinner"
 						>
-							<RotateCcw size={16} />
+							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
 						</button>
 					</div>
 				</div>
