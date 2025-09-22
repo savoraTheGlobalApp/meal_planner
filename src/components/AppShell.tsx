@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, User, Heart, Salad, LogOut, Bell } from 'lucide-react';
+import { Home as HomeIcon, User, Heart, LogOut, Bell } from 'lucide-react';
 import { useNotificationStore } from '@/store/notifications';
+import appLogo from '/logo.png';
 import { useAuthStore } from '../store/auth';
 import { useState, useEffect } from 'react';
 
@@ -10,6 +11,7 @@ export function AppShell() {
 	const location = useLocation();
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
+    const unread = useNotificationStore(s => s.notifications.filter(n => !n.read).length);
 
 	console.log('AppShell: Rendering with user:', user, 'loading:', loading, 'path:', location.pathname);
 
@@ -55,18 +57,16 @@ export function AppShell() {
 	};
 
     const isNotifications = location.pathname.startsWith('/notifications');
-
-    const unread = useNotificationStore(s => s.notifications.filter(n => !n.read).length);
-    return (
+	return (
 		<div className="min-h-screen flex flex-col">
             {!isNotifications && (
-                <header className={`glass sticky top-0 z-50 transition-transform duration-300 ${
-                    isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-                }`}>
-                    <div className="container h-14 flex items-center justify-between">
+			<header className={`glass sticky top-0 z-50 transition-transform duration-300 ${
+				isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+			}`}>
+				<div className="container h-14 flex items-center justify-between">
                         <Link to="/home" className="flex items-center gap-2 text-lg font-semibold bg-gradient-to-r from-sky-600 to-fuchsia-600 bg-clip-text text-transparent">
-                            <Salad className="text-brand" /> Meal Planner
-                        </Link>
+                            <img src={appLogo} alt="Meal Planner" className="w-6 h-6 rounded" /> Meal Planner
+					</Link>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => navigate('/notifications')}
@@ -80,20 +80,20 @@ export function AppShell() {
                                     </span>
                                 )}
                             </button>
-                            <nav className="hidden md:flex items-center gap-2">
-                            <NavLink to="/home" className={({isActive})=>`pill ${isActive? 'ring-1 ring-sky-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><HomeIcon size={18}/> Home</NavLink>
+					<nav className="hidden md:flex items-center gap-2">
+						<NavLink to="/home" className={({isActive})=>`pill ${isActive? 'ring-1 ring-sky-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><HomeIcon size={18}/> Home</NavLink>
                             <NavLink to="/preferences" className={({isActive})=>`pill ${isActive? 'ring-1 ring-emerald-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><Heart size={18}/> Preferences</NavLink>
-                            <NavLink to="/profile" className={({isActive})=>`pill ${isActive? 'ring-1 ring-fuchsia-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><User size={18}/> Profile</NavLink>
-                            <button 
-                                onClick={handleLogout}
-                                className="pill text-slate-600 hover:ring-1 hover:ring-slate-300"
-                            >
-                                <LogOut size={18}/> Logout
-                            </button>
-                            </nav>
+						<NavLink to="/profile" className={({isActive})=>`pill ${isActive? 'ring-1 ring-fuchsia-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><User size={18}/> Profile</NavLink>
+						<button 
+							onClick={handleLogout}
+							className="pill text-slate-600 hover:ring-1 hover:ring-slate-300"
+						>
+							<LogOut size={18}/> Logout
+						</button>
+					</nav>
                         </div>
-                    </div>
-                </header>
+				</div>
+			</header>
             )}
             <main className={`flex-1 container ${isNotifications ? 'pt-0' : 'py-6'} pb-16 md:pb-6`}>
 				<Outlet />
@@ -110,11 +110,11 @@ export function AppShell() {
                     </NavLink>
                     <NavLink to="/preferences" className={({isActive})=>`flex items-center justify-center transition-colors ${isActive? 'text-emerald-600':'text-slate-400 hover:text-slate-600'}`}>
                         <Heart size={22} fill={location.pathname === '/preferences' ? 'currentColor' : 'none'} />
-                    </NavLink>
+					</NavLink>
                     <NavLink to="/profile" className={({isActive})=>`flex items-center justify-center transition-colors ${isActive? 'text-purple-600':'text-slate-400 hover:text-slate-600'}`}>
                         <User size={22} fill={location.pathname === '/profile' ? 'currentColor' : 'none'} />
-                    </NavLink>
-                </div>
+					</NavLink>
+				</div>
 			</footer>
 		</div>
 	);
