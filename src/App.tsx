@@ -12,13 +12,17 @@ import { PreferencesStep } from './pages/preferences/PreferencesStep';
 import { WeeklyView } from './pages/menu/WeeklyView';
 import { DailyView } from './pages/menu/DailyView';
 import { useAuthStore } from './store/auth';
+import { useNotificationStore } from './store/notifications';
 
 export default function App() {
 	const { initialize } = useAuthStore();
+    const { init: initNotifications } = useNotificationStore();
 
 	useEffect(() => {
 		console.log('App: Initializing auth store');
 		initialize();
+        // Initialize notifications early so native listeners catch taps from cold start
+        try { initNotifications(); } catch (e) { console.warn('Notifications init failed', e); }
 	}, [initialize]);
 
 	console.log('App: Rendering with routes');

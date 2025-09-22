@@ -65,6 +65,27 @@ function formatNextDayMessage(): { title: string; body: string } {
 	return { title, body };
 }
 
+async function waitForMenuReady(timeoutMs = 1500): Promise<void> {
+    const start = Date.now();
+    const hasMenu = () => (useMenuStore.getState().week || []).length > 0;
+    if (hasMenu()) return;
+    return new Promise<void>(resolve => {
+        const unsub = useMenuStore.subscribe(() => {
+            if (hasMenu()) {
+                unsub();
+                resolve();
+            }
+        });
+        const timer = setInterval(() => {
+            if (hasMenu() || Date.now() - start > timeoutMs) {
+                clearInterval(timer);
+                try { unsub(); } catch {}
+                resolve();
+            }
+        }, 50);
+    });
+}
+
 function getNextTriggerDate(): Date {
 	const now = new Date();
     const target = new Date();
@@ -103,34 +124,20 @@ async function scheduleNativeDaily(getPermission: () => NotificationPermission |
     // Compute next trigger time at 20:00 and set repeating
     const at = getNextTriggerDate();
 
-    // Schedule repeating notification handled by OS
-    const { title, body } = formatNextDayMessage();
+    // Schedule with generic content - actual content will be generated when notification fires
     await LocalNotifications.schedule({
         notifications: [
             {
                 id: 8001,
-                title,
-                // Use bigText for expandable details on Android
-                body,
-                largeBody: body,
+                title: 'Meal Planner Reminder',
+                body: 'Check your tomorrow\'s meals',
                 schedule: { at, repeats: true, every: 'day' },
-                smallIcon: 'ic_stat_icon', // add this resource in android app for custom logo if desired
+                smallIcon: 'ic_stat_icon', // monochrome small icon for status bar
+                largeIcon: 'ic_launcher', // colored launcher icon in expanded view
                 channelId: 'meal_planner_daily',
             },
         ],
     });
-
-    // Also store an entry for history immediately at schedule time
-    const entry: AppNotification = {
-        id: `${Date.now()}`,
-        title,
-        body,
-        createdAt: Date.now(),
-        read: false,
-    };
-    const existing = loadStored();
-    const updated = [entry, ...existing].slice(0, 50);
-    saveStored(updated);
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -161,12 +168,24 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                     if (perm.display !== 'granted') {
                         await LocalNotifications.requestPermissions();
                     }
+                    // Ensure a channel exists (Android 8+)
+                    try {
+                        await LocalNotifications.createChannel({
+                            id: 'meal_planner_daily',
+                            name: 'Meal Planner Daily',
+                            description: 'Daily reminders for tomorrow\'s meals',
+                            importance: 4,
+                            visibility: 1,
+                        });
+                    } catch {}
+
                     await scheduleNativeDaily(() => get().permission);
 
                     // Add listeners once
                     if (!get().listenersAdded) {
-                        LocalNotifications.addListener('localNotificationActionPerformed', () => {
-                            // Build a fresh entry and navigate to notifications
+                        LocalNotifications.addListener('localNotificationActionPerformed', async () => {
+                            // Wait briefly for stores to hydrate, then generate fresh content
+                            await waitForMenuReady();
                             const { title, body } = formatNextDayMessage();
                             const entry: AppNotification = {
                                 id: `${Date.now()}`,
@@ -178,11 +197,20 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                             const updated = [entry, ...get().notifications].slice(0, 50);
                             set({ notifications: updated, listenersAdded: true });
                             saveStored(updated);
-                            try { window.location.href = '/notifications'; } catch {}
+                            try {
+                                const w = window as unknown as { history?: History; location?: Location };
+                                if (w.history && typeof w.history.pushState === 'function') {
+                                    w.history.pushState({}, '', '/notifications');
+                                    window.dispatchEvent(new PopStateEvent('popstate'));
+                                } else if (w.location) {
+                                    w.location.href = '/notifications';
+                                }
+                            } catch {}
                         });
 
-                        LocalNotifications.addListener('localNotificationReceived', () => {
-                            // If app is foreground, also log entry
+                        LocalNotifications.addListener('localNotificationReceived', async () => {
+                            // If app is foreground, also log entry with fresh content
+                            await waitForMenuReady();
                             const { title, body } = formatNextDayMessage();
                             const entry: AppNotification = {
                                 id: `${Date.now()}`,
