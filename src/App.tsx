@@ -5,6 +5,7 @@ import { AuthGuard } from './components/AuthGuard';
 import { SignUp } from './pages/SignUp';
 import { SignIn } from './pages/SignIn';
 import { Home } from './pages/Home';
+import { Notifications } from './pages/Notifications';
 import { Profile } from './pages/Profile';
 import { Preferences } from './pages/Preferences';
 import { PreferencesStep } from './pages/preferences/PreferencesStep';
@@ -29,6 +30,7 @@ export default function App() {
 			<Route path="/signin" element={<SignIn />} />
 			<Route element={<AppShell />}>
 				<Route path="/home" element={<Home />} />
+				<Route path="/notifications" element={<Notifications />} />
 				<Route path="/preferences" element={<Preferences />} />
 				<Route path="/profile" element={<Profile />} />
 				<Route path="/preferences/:step" element={<PreferencesStep />} />

@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNotificationStore } from '@/store/notifications';
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 
@@ -11,6 +13,9 @@ export function Home() {
 	const today = new Date();
 	const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert Sunday=0 to Sunday=6
 	
+	const { init } = useNotificationStore();
+	useEffect(() => { init(); }, [init]);
+
 	return (
 		<div className="space-y-6">
 			{/* Show Preferences Card only if no menu has been generated */}
