@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { useMenuStore } from './menu';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 export type AppNotification = {
 	id: string;
@@ -20,6 +22,8 @@ type NotificationState = {
 
 const STORAGE_KEY = 'meal_planner_notifications';
 const LAST_SCHEDULED_KEY = 'meal_planner_notifications_last_schedule';
+// Single source of truth for daily reminder time (24h HH:MM). Change here only.
+export const SCHEDULE_TIME: string = '20:00';
 
 function loadStored(): AppNotification[] {
 	try {
@@ -60,24 +64,69 @@ function formatNextDayMessage(): { title: string; body: string } {
 	return { title, body };
 }
 
-function msUntilNext8pm(): number {
+function getNextTriggerDate(): Date {
 	const now = new Date();
-	const target = new Date();
-	target.setHours(20, 0, 0, 0);
+    const target = new Date();
+    const [hh, mm] = SCHEDULE_TIME.split(':').map(v => parseInt(v, 10));
+    target.setHours(!Number.isNaN(hh) ? hh : 20, !Number.isNaN(mm) ? mm : 0, 0, 0);
 	if (now.getTime() >= target.getTime()) {
 		// schedule for tomorrow 20:00
-		target.setDate(target.getDate() + 1);
+        target.setDate(target.getDate() + 1);
 	}
-	return target.getTime() - now.getTime();
+    return target;
 }
 
+function msUntilNextReminder(): number {
+    const now = new Date();
+    const target = getNextTriggerDate();
+    return target.getTime() - now.getTime();
+}
+
+// no test override logic; single constant SCHEDULE_TIME controls scheduling
+
 function scheduleTimer(send: () => void) {
-	const delay = msUntilNext8pm();
+    const delay = msUntilNextReminder();
 	window.setTimeout(() => {
 		send();
 		// chain next run roughly 24h later; use setTimeout again for clock changes
 		scheduleTimer(send);
 	}, delay);
+}
+
+async function scheduleNativeDaily(getPermission: () => NotificationPermission | 'unsupported') {
+    // Cancel any previous schedule with our ID to avoid duplicates
+    try {
+        await LocalNotifications.cancel({ notifications: [{ id: 8001 }] });
+    } catch {}
+
+    // Compute next trigger time at 20:00 and set repeating
+    const at = getNextTriggerDate();
+
+    // Schedule repeating notification handled by OS
+    const { title, body } = formatNextDayMessage();
+    await LocalNotifications.schedule({
+        notifications: [
+            {
+                id: 8001,
+                title,
+                body,
+                schedule: { at, repeats: true, every: 'day' },
+                smallIcon: 'ic_stat_icon',
+            },
+        ],
+    });
+
+    // Also store an entry for history immediately at schedule time
+    const entry: AppNotification = {
+        id: `${Date.now()}`,
+        title,
+        body,
+        createdAt: Date.now(),
+        read: false,
+    };
+    const existing = loadStored();
+    const updated = [entry, ...existing].slice(0, 50);
+    saveStored(updated);
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -87,54 +136,65 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
 	init: () => {
 		if (get().initialised) return;
-		const supported = typeof window !== 'undefined' && 'Notification' in window;
-		if (!supported) {
-			set({ permission: 'unsupported', initialised: true });
-			return;
-		}
+        const isNative = Capacitor.isNativePlatform();
+        const webSupported = typeof window !== 'undefined' && 'Notification' in window;
 
-		const requestPermission = async () => {
-			try {
-				const perm = await Notification.requestPermission();
-				set({ permission: perm });
-			} catch {
-				set({ permission: Notification.permission });
-			}
-		};
+        const requestWebPermission = async () => {
+            try {
+                const perm = await Notification.requestPermission();
+                set({ permission: perm });
+            } catch {
+                set({ permission: Notification.permission });
+            }
+        };
 
-		// Request permission if default
-		if (Notification.permission === 'default') {
-			requestPermission();
-		} else {
-			set({ permission: Notification.permission });
-		}
+        // Native (APK): request and schedule via Capacitor Local Notifications
+        if (isNative) {
+            (async () => {
+                try {
+                    const perm = await LocalNotifications.checkPermissions();
+                    if (perm.display !== 'granted') {
+                        await LocalNotifications.requestPermissions();
+                    }
+                    await scheduleNativeDaily(() => get().permission);
+                } catch (e) {
+                    console.warn('LocalNotifications scheduling failed, falling back to web if available', e);
+                }
+            })();
+        }
 
-		// Schedule timer only once per session and once per day (guard by last scheduled day)
-		try {
-			const last = localStorage.getItem(LAST_SCHEDULED_KEY);
-			const todayKey = new Date().toDateString();
-			if (last !== todayKey) {
-				localStorage.setItem(LAST_SCHEDULED_KEY, todayKey);
-				scheduleTimer(() => {
-					const { title, body } = formatNextDayMessage();
-					// Fire browser notification if permitted
-					if (get().permission === 'granted') {
-						try { new Notification(title, { body }); } catch {}
-					}
-					// Always store entry
-					const entry: AppNotification = {
-						id: `${Date.now()}`,
-						title,
-						body,
-						createdAt: Date.now(),
-						read: false,
-					};
-					const updated = [entry, ...get().notifications].slice(0, 50);
-					set({ notifications: updated });
-					saveStored(updated);
-				});
-			}
-		} catch {}
+        // Web fallback: request permission and schedule setTimeout loop
+        if (webSupported) {
+            if (Notification.permission === 'default') {
+                requestWebPermission();
+            } else {
+                set({ permission: Notification.permission });
+            }
+
+            try {
+                const last = localStorage.getItem(LAST_SCHEDULED_KEY);
+                const todayKey = new Date().toDateString();
+                if (last !== todayKey) {
+                    localStorage.setItem(LAST_SCHEDULED_KEY, todayKey);
+                    scheduleTimer(() => {
+                        const { title, body } = formatNextDayMessage();
+                        if (get().permission === 'granted') {
+                            try { new Notification(title, { body }); } catch {}
+                        }
+                        const entry: AppNotification = {
+                            id: `${Date.now()}`,
+                            title,
+                            body,
+                            createdAt: Date.now(),
+                            read: false,
+                        };
+                        const updated = [entry, ...get().notifications].slice(0, 50);
+                        set({ notifications: updated });
+                        saveStored(updated);
+                    });
+                }
+            } catch {}
+        }
 
 		set({ initialised: true });
 	},

@@ -51,7 +51,7 @@ export function WeeklyView() {
 	const { orderedDays, orderedDates, orderedWeek } = getOrderedDays();
 
 	// Check if user has preferences set
-	const hasPreferences = prefs.breakfast.length > 0 || prefs.dal.length > 0 || prefs.veg.length > 0 || prefs.salad.length > 0;
+	const hasPreferences = prefs.breakfast.length > 0 || prefs.dal.length > 0 || prefs.veg.length > 0;
 
 	const handleDownloadPDF = async () => {
 		if (!week.length) return;
