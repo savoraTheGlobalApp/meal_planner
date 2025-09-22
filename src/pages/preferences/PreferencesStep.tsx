@@ -94,7 +94,6 @@ const initialBuiltIn: Record<Category, string[]> = {
 	breakfast: ['Poha','Daliya','Upma','Aloo Paratha','Paneer Paratha','Gobhi Paratha','Masala Dosa','Idli Sambhar','Veg Sandwich','Cornflakes'],
 	dal: ['Moong Dal','Masoor Dal','Chana Dal','Toor (Arhar) Dal','Urad Dal','Rajma','Chhole','Lobia'],
 	veg: ['Potato','Paneer','Mushroom','Spinach','Cauliflower','Broccoli','Cabbage','Beans','Peas','Brinjal','Okra (Bhindi)','Capsicum','Bottle Gourd (Lauki)'],
-	salad: ['Apple','Banana','Carrot','Beetroot','Papaya','Orange','Grapes','Pomegranate'],
 };
 
 function catClass(cat: Category) {
@@ -106,7 +105,6 @@ function getSelectedStyle(cat: Category) {
 		case 'breakfast': return 'bg-pink-100 border border-pink-300 text-pink-900';
 		case 'dal': return 'bg-amber-100 border border-amber-300 text-amber-900';
 		case 'veg': return 'bg-emerald-100 border border-emerald-300 text-emerald-900';
-		case 'salad': return 'bg-violet-100 border border-violet-300 text-violet-900';
 		default: return 'bg-slate-100 border border-slate-300 text-slate-900';
 	}
 }
