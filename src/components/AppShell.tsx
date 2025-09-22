@@ -41,17 +41,16 @@ export function AppShell() {
 		);
 	}
 
-	// Redirect to signup if not authenticated
-	// TEMPORARILY DISABLED FOR DEBUGGING
-	// if (!user) {
-	// 	console.log('AppShell: No user, redirecting to signup');
-	// 	navigate('/signup');
-	// 	return null;
-	// }
+	// Redirect to onboarding if not authenticated
+	if (!user) {
+		console.log('AppShell: No user, redirecting to onboarding');
+		navigate('/');
+		return null;
+	}
 
 	const handleLogout = async () => {
 		await logout();
-		navigate('/signup');
+		navigate('/');
 	};
 
 	return (

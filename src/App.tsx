@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AppShell } from './components/AppShell';
-import { Onboarding } from './pages/Onboarding';
+import { AuthGuard } from './components/AuthGuard';
 import { SignUp } from './pages/SignUp';
 import { SignIn } from './pages/SignIn';
 import { Home } from './pages/Home';
@@ -24,7 +24,7 @@ export default function App() {
 	
 	return (
 		<Routes>
-			<Route path="/" element={<Onboarding />} />
+			<Route path="/" element={<AuthGuard />} />
 			<Route path="/signup" element={<SignUp />} />
 			<Route path="/signin" element={<SignIn />} />
 			<Route element={<AppShell />}>
