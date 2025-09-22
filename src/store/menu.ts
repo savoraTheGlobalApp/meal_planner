@@ -11,42 +11,118 @@ function pickRandom<T>(arr: T[]): T | null {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Advanced meal generation with round-robin + randomness
+class MealGenerator {
+	private breakfastIndex = 0;
+	private lunchDalIndex = 0;
+	private lunchVegIndex = 0;
+	private dinnerDalIndex = 0;
+	private dinnerVegIndex = 0;
+	private preferences: Preferences;
+
+	constructor(preferences: Preferences) {
+		this.preferences = preferences;
+		// Shuffle dinner dal and veg arrays for variety
+		this.shuffleDinnerArrays();
+	}
+
+	private shuffleDinnerArrays() {
+		// Create shuffled copies for dinner to create variety
+		const shuffledDal = [...this.preferences.dal].sort(() => Math.random() - 0.5);
+		const shuffledVeg = [...this.preferences.veg].sort(() => Math.random() - 0.5);
+		
+		// Store shuffled arrays for dinner
+		(this as any).dinnerDalArray = shuffledDal;
+		(this as any).dinnerVegArray = shuffledVeg;
+	}
+
+	private selectItem(array: string[], index: number, isRandom: boolean = false): string {
+		if (!array.length) return 'Item';
+		if (isRandom) {
+			return array[Math.floor(Math.random() * array.length)];
+		}
+		return array[index % array.length];
+	}
+
+	private shouldUseRandom(): boolean {
+		// 10% chance for random selection
+		return Math.random() < 0.1;
+	}
+
+	generateMeal(): Meal {
+		// Breakfast: Round-robin with 10% randomness
+		const breakfastRandom = this.shouldUseRandom();
+		const breakfast = this.selectItem(
+			this.preferences.breakfast, 
+			this.breakfastIndex, 
+			breakfastRandom
+		);
+		if (!breakfastRandom) this.breakfastIndex++;
+
+		// Lunch Dal: Round-robin with 10% randomness
+		const lunchDalRandom = this.shouldUseRandom();
+		const lunchDal = this.selectItem(
+			this.preferences.dal, 
+			this.lunchDalIndex, 
+			lunchDalRandom
+		);
+		if (!lunchDalRandom) this.lunchDalIndex++;
+
+		// Lunch Veg: Round-robin with 10% randomness
+		const lunchVegRandom = this.shouldUseRandom();
+		const lunchVeg = this.selectItem(
+			this.preferences.veg, 
+			this.lunchVegIndex, 
+			lunchVegRandom
+		);
+		if (!lunchVegRandom) this.lunchVegIndex++;
+
+		// Dinner Dal: Use shuffled array, round-robin with 10% randomness
+		const dinnerDalRandom = this.shouldUseRandom();
+		const dinnerDal = this.selectItem(
+			(this as any).dinnerDalArray, 
+			this.dinnerDalIndex, 
+			dinnerDalRandom
+		);
+		if (!dinnerDalRandom) this.dinnerDalIndex++;
+
+		// Dinner Veg: Use shuffled array, round-robin with 10% randomness
+		const dinnerVegRandom = this.shouldUseRandom();
+		const dinnerVeg = this.selectItem(
+			(this as any).dinnerVegArray, 
+			this.dinnerVegIndex, 
+			dinnerVegRandom
+		);
+		if (!dinnerVegRandom) this.dinnerVegIndex++;
+
+		// Ensure lunch and dinner don't have the same dal or veg
+		const finalDinnerDal = dinnerDal === lunchDal ? 
+			this.selectItem((this as any).dinnerDalArray, this.dinnerDalIndex + 1, true) : 
+			dinnerDal;
+		
+		const finalDinnerVeg = dinnerVeg === lunchVeg ? 
+			this.selectItem((this as any).dinnerVegArray, this.dinnerVegIndex + 1, true) : 
+			dinnerVeg;
+
+		const meal = {
+			breakfast,
+			lunch: [lunchDal, lunchVeg, 'Roti/Rice'],
+			dinner: [finalDinnerDal, finalDinnerVeg, 'Roti/Rice'],
+		};
+
+		console.log('GenerateDay - Final meal:', meal);
+		return meal;
+	}
+}
+
 function generateDay(preferences: Preferences): Meal {
-	
-	// Generate breakfast with main item only
-	const mainBreakfast = pickRandom(preferences.breakfast);
-	
-	// Use actual selections or fallback to first item if available
-	const breakfastMain = mainBreakfast || (preferences.breakfast.length > 0 ? preferences.breakfast[0] : 'Breakfast');
-	const breakfast = breakfastMain;
-	
-
-	
-	const lunchDal = pickRandom(preferences.dal);
-	const lunchVeg = pickRandom(preferences.veg);
-	const dinnerDal = pickRandom(preferences.dal);
-	const dinnerVeg = pickRandom(preferences.veg);
-	
-	// Use actual selections or fallback to first item if available
-	const lunchDalItem = lunchDal || (preferences.dal.length > 0 ? preferences.dal[0] : 'Dal');
-	const lunchVegItem = lunchVeg || (preferences.veg.length > 0 ? preferences.veg[0] : 'Vegetable');
-	const dinnerDalItem = dinnerDal || (preferences.dal.length > 0 ? preferences.dal[0] : 'Dal');
-	const dinnerVegItem = dinnerVeg || (preferences.veg.length > 0 ? preferences.veg[0] : 'Vegetable');
-	
-
-	
-	const meal = {
-		breakfast,
-		lunch: [lunchDalItem, lunchVegItem, 'Roti/Rice'],
-		dinner: [dinnerDalItem, dinnerVegItem, 'Roti/Rice'],
-	};
-	
-	console.log('GenerateDay - Final meal:', meal);
-	return meal;
+	const generator = new MealGenerator(preferences);
+	return generator.generateMeal();
 }
 
 function generateWeek(preferences: Preferences): WeekMenu {
-	return Array.from({ length: 7 }, () => generateDay(preferences));
+	const generator = new MealGenerator(preferences);
+	return Array.from({ length: 7 }, () => generator.generateMeal());
 }
 
 type MenuState = {
