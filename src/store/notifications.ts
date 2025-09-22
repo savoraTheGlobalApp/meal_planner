@@ -15,6 +15,7 @@ type NotificationState = {
 	notifications: AppNotification[];
 	permission: NotificationPermission | 'unsupported';
 	initialised: boolean;
+    listenersAdded?: boolean;
 	init: () => void;
 	markAllRead: () => void;
 	getLast7Days: () => AppNotification[];
@@ -109,9 +110,12 @@ async function scheduleNativeDaily(getPermission: () => NotificationPermission |
             {
                 id: 8001,
                 title,
+                // Use bigText for expandable details on Android
                 body,
+                largeBody: body,
                 schedule: { at, repeats: true, every: 'day' },
-                smallIcon: 'ic_stat_icon',
+                smallIcon: 'ic_stat_icon', // add this resource in android app for custom logo if desired
+                channelId: 'meal_planner_daily',
             },
         ],
     });
@@ -132,7 +136,8 @@ async function scheduleNativeDaily(getPermission: () => NotificationPermission |
 export const useNotificationStore = create<NotificationState>((set, get) => ({
 	notifications: loadStored(),
 	permission: typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported',
-	initialised: false,
+    initialised: false,
+    listenersAdded: false,
 
 	init: () => {
 		if (get().initialised) return;
@@ -157,6 +162,40 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                         await LocalNotifications.requestPermissions();
                     }
                     await scheduleNativeDaily(() => get().permission);
+
+                    // Add listeners once
+                    if (!get().listenersAdded) {
+                        LocalNotifications.addListener('localNotificationActionPerformed', () => {
+                            // Build a fresh entry and navigate to notifications
+                            const { title, body } = formatNextDayMessage();
+                            const entry: AppNotification = {
+                                id: `${Date.now()}`,
+                                title,
+                                body,
+                                createdAt: Date.now(),
+                                read: false,
+                            };
+                            const updated = [entry, ...get().notifications].slice(0, 50);
+                            set({ notifications: updated, listenersAdded: true });
+                            saveStored(updated);
+                            try { window.location.href = '/notifications'; } catch {}
+                        });
+
+                        LocalNotifications.addListener('localNotificationReceived', () => {
+                            // If app is foreground, also log entry
+                            const { title, body } = formatNextDayMessage();
+                            const entry: AppNotification = {
+                                id: `${Date.now()}`,
+                                title,
+                                body,
+                                createdAt: Date.now(),
+                                read: false,
+                            };
+                            const updated = [entry, ...get().notifications].slice(0, 50);
+                            set({ notifications: updated, listenersAdded: true });
+                            saveStored(updated);
+                        });
+                    }
                 } catch (e) {
                     console.warn('LocalNotifications scheduling failed, falling back to web if available', e);
                 }
@@ -196,7 +235,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             } catch {}
         }
 
-		set({ initialised: true });
+        set({ initialised: true });
 	},
 
 	markAllRead: () => {
