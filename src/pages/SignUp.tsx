@@ -57,9 +57,6 @@ export function SignUp() {
 						Create your account
 					</h2>
 					<p className="mt-2 text-sm text-gray-600">
-						Tell us what you usually eat and we will create a 7-day menu for you that you can customize anytime.
-					</p>
-					<p className="mt-2 text-sm text-gray-600">
 						Already have an account?{' '}
 						<Link to="/signin" className="font-medium text-brand hover:text-brand-dark">
 							Sign in
