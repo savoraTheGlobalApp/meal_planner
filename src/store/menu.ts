@@ -13,38 +13,32 @@ function pickRandom<T>(arr: T[]): T | null {
 
 function generateDay(preferences: Preferences): Meal {
 	
-	// Generate breakfast with main item + fruit/salad
+	// Generate breakfast with main item only
 	const mainBreakfast = pickRandom(preferences.breakfast);
-	const breakfastFruit = pickRandom(preferences.salad);
 	
 	// Use actual selections or fallback to first item if available
 	const breakfastMain = mainBreakfast || (preferences.breakfast.length > 0 ? preferences.breakfast[0] : 'Breakfast');
-	const breakfastFruitItem = breakfastFruit || (preferences.salad.length > 0 ? preferences.salad[0] : 'Fruit');
-	const breakfast = `${breakfastMain}, ${breakfastFruitItem}`;
+	const breakfast = breakfastMain;
 	
 
 	
 	const lunchDal = pickRandom(preferences.dal);
 	const lunchVeg = pickRandom(preferences.veg);
-	const lunchSalad = pickRandom(preferences.salad);
 	const dinnerDal = pickRandom(preferences.dal);
 	const dinnerVeg = pickRandom(preferences.veg);
-	const dinnerSalad = pickRandom(preferences.salad);
 	
 	// Use actual selections or fallback to first item if available
 	const lunchDalItem = lunchDal || (preferences.dal.length > 0 ? preferences.dal[0] : 'Dal');
 	const lunchVegItem = lunchVeg || (preferences.veg.length > 0 ? preferences.veg[0] : 'Vegetable');
-	const lunchSaladItem = lunchSalad || (preferences.salad.length > 0 ? preferences.salad[0] : 'Fruit/Salad');
 	const dinnerDalItem = dinnerDal || (preferences.dal.length > 0 ? preferences.dal[0] : 'Dal');
 	const dinnerVegItem = dinnerVeg || (preferences.veg.length > 0 ? preferences.veg[0] : 'Vegetable');
-	const dinnerSaladItem = dinnerSalad || (preferences.salad.length > 0 ? preferences.salad[0] : 'Fruit/Salad');
 	
 
 	
 	const meal = {
 		breakfast,
-		lunch: [lunchDalItem, lunchVegItem, lunchSaladItem, 'Roti/Rice'],
-		dinner: [dinnerDalItem, dinnerVegItem, dinnerSaladItem, 'Roti/Rice'],
+		lunch: [lunchDalItem, lunchVegItem, 'Roti/Rice'],
+		dinner: [dinnerDalItem, dinnerVegItem, 'Roti/Rice'],
 	};
 	
 	console.log('GenerateDay - Final meal:', meal);

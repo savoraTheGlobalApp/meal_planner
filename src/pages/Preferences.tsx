@@ -7,11 +7,13 @@ export function Preferences() {
 	const categories = [
 		{ key: 'breakfast' as const, label: 'Breakfast', color: 'rose', icon: '🌅' },
 		{ key: 'dal' as const, label: 'Dal', color: 'amber', icon: '🍲' },
-		{ key: 'veg' as const, label: 'Vegetables', color: 'emerald', icon: '🥬' },
-		{ key: 'salad' as const, label: 'Fruits/Salad', color: 'violet', icon: '🥗' }
+		{ key: 'veg' as const, label: 'Vegetables', color: 'emerald', icon: '🥬' }
 	];
 
-	const totalSelected = Object.values(selected).flat().length;
+	// Only count items from the current categories (excluding any old salad data)
+	const totalSelected = categories.reduce((total, category) => {
+		return total + (selected[category.key]?.length || 0);
+	}, 0);
 
 	return (
 		<div className="space-y-6">

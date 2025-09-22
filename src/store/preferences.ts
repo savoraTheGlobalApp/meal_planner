@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { updateUserPreferences } from '../services/firebaseService';
 import { useAuthStore } from './auth';
 
-export type Category = 'breakfast' | 'dal' | 'veg' | 'salad';
+export type Category = 'breakfast' | 'dal' | 'veg';
 
 export type Preferences = Record<Category, string[]>;
 
@@ -10,7 +10,6 @@ const initialItems: Record<Category, string[]> = {
 	breakfast: ['Poha','Daliya','Upma','Aloo Paratha','Paneer Paratha','Gobhi Paratha','Masala Dosa','Idli Sambhar','Veg Sandwich','Cornflakes'],
 	dal: ['Moong Dal','Masoor Dal','Chana Dal','Toor (Arhar) Dal','Urad Dal','Rajma','Chhole','Lobia'],
 	veg: ['Potato','Paneer','Mushroom','Spinach','Cauliflower','Broccoli','Cabbage','Beans','Peas','Brinjal','Okra (Bhindi)','Capsicum','Bottle Gourd (Lauki)'],
-	salad: ['Apple','Banana','Carrot','Beetroot','Papaya','Orange','Grapes','Pomegranate'],
 };
 
 type PrefState = {
@@ -25,7 +24,7 @@ type PrefState = {
 
 export const usePrefStore = create<PrefState>((set, get) => ({
 	available: initialItems,
-	selected: { breakfast: [], dal: [], veg: [], salad: [] },
+	selected: { breakfast: [], dal: [], veg: [] },
 	loading: false,
 	addCustom: async (cat, item) => {
 		item = item.trim();
@@ -112,8 +111,21 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 		
 		set({ loading: false });
 	},
-	loadPreferences: (preferences: Preferences) => {
-		set({ selected: preferences });
+	loadPreferences: (preferences: any) => {
+		// Handle migration from old data structure that might include 'salad'
+		const migratedPreferences: Preferences = {
+			breakfast: preferences.breakfast || [],
+			dal: preferences.dal || [],
+			veg: preferences.veg || []
+		};
+		
+		// If there's old salad data, we can optionally migrate some items to vegetables
+		// For now, we'll just ignore the salad data
+		if (preferences.salad && Array.isArray(preferences.salad)) {
+			console.log('Found old salad data, ignoring:', preferences.salad);
+		}
+		
+		set({ selected: migratedPreferences });
 	}
 }));
 

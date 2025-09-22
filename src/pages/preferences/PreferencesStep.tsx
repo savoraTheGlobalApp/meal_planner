@@ -4,12 +4,11 @@ import { Category, usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 import { X } from 'lucide-react';
 
-const order: Category[] = ['breakfast','dal','veg','salad'];
+const order: Category[] = ['breakfast','dal','veg'];
 const nextLabel: Record<Category,string> = {
 	breakfast: 'Click next to select your Dal',
 	dal: 'Click next to select your Vegetable',
-	veg: 'Click next to select your Fruits/Salad',
-	salad: 'Generate 7-day Menu',
+	veg: 'Generate 7-day Menu',
 }
 
 export function PreferencesStep() {
@@ -21,7 +20,7 @@ export function PreferencesStep() {
 	const [custom, setCustom] = useState('');
 
 	const items = useMemo(() => available[cat].slice().sort((a,b)=>a.localeCompare(b)), [available, cat]);
-	const isLast = cat === 'salad';
+	const isLast = cat === 'veg';
 	const nextPath = isLast ? '/menu/weekly' : `/preferences/${order[order.indexOf(cat)+1]}`;
 	
 	// Check if menu already exists
@@ -43,7 +42,7 @@ export function PreferencesStep() {
 	return (
 		<div className="max-w-2xl space-y-4">
 			<div className="card">
-				<h2 className="text-xl font-semibold capitalize mb-2">Select your {cat === 'veg' ? 'Vegetables' : cat === 'dal' ? 'Dal' : cat === 'salad' ? 'Fruits/Salad' : 'Breakfast'} preferences</h2>
+				<h2 className="text-xl font-semibold capitalize mb-2">Select your {cat === 'veg' ? 'Vegetables' : cat === 'dal' ? 'Dal' : 'Breakfast'} preferences</h2>
 				<p className="text-slate-300">Tap to toggle. Add custom items if missing.</p>
 				<div className="mt-4 space-y-2 max-h-[50vh] overflow-auto pr-1">
 					{items.map(item => {
