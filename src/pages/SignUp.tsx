@@ -14,7 +14,9 @@ export function SignUp() {
 
 	// Redirect if user is already authenticated
 	useEffect(() => {
+		console.log('SignUp: User state changed:', user);
 		if (user) {
+			console.log('SignUp: User authenticated, redirecting to home');
 			navigate('/home');
 		}
 	}, [user, navigate]);

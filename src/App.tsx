@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AppShell } from './components/AppShell';
+import { Onboarding } from './pages/Onboarding';
 import { SignUp } from './pages/SignUp';
 import { SignIn } from './pages/SignIn';
 import { Home } from './pages/Home';
@@ -15,15 +16,18 @@ export default function App() {
 	const { initialize } = useAuthStore();
 
 	useEffect(() => {
+		console.log('App: Initializing auth store');
 		initialize();
 	}, [initialize]);
 
+	console.log('App: Rendering with routes');
+	
 	return (
 		<Routes>
+			<Route path="/" element={<Onboarding />} />
 			<Route path="/signup" element={<SignUp />} />
 			<Route path="/signin" element={<SignIn />} />
 			<Route element={<AppShell />}>
-				<Route index element={<Navigate to="/home" replace />} />
 				<Route path="/home" element={<Home />} />
 				<Route path="/preferences" element={<Preferences />} />
 				<Route path="/profile" element={<Profile />} />
@@ -31,7 +35,7 @@ export default function App() {
 				<Route path="/menu/weekly" element={<WeeklyView />} />
 				<Route path="/menu/daily/:dayIndex" element={<DailyView />} />
 			</Route>
-			<Route path="*" element={<Navigate to="/signup" replace />} />
+			<Route path="*" element={<Navigate to="/" replace />} />
 		</Routes>
 	);
 }

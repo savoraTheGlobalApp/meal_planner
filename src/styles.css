@@ -18,6 +18,8 @@ body {
 .card { @apply rounded-xl border border-slate-200 bg-white backdrop-blur p-4 shadow-lg; }
 .card-compact { @apply rounded-lg border border-slate-200 bg-white backdrop-blur p-3 shadow-md; }
 .card-gradient { @apply relative overflow-hidden; }
+
+/* Onboarding animations removed for cleaner, static design */
 .card-gradient::before {
 	content: '';
 	position: absolute;

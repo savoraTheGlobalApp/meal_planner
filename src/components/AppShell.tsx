@@ -10,6 +10,8 @@ export function AppShell() {
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
 
+	console.log('AppShell: Rendering with user:', user, 'loading:', loading, 'path:', location.pathname);
+
 	useEffect(() => {
 		const handleScroll = () => {
 			const currentScrollY = window.scrollY;
@@ -40,15 +42,12 @@ export function AppShell() {
 	}
 
 	// Redirect to signup if not authenticated
-	if (!user && !['/signup', '/signin'].includes(location.pathname)) {
-		navigate('/signup');
-		return null;
-	}
-
-	// Don't show shell for auth pages
-	if (['/signup', '/signin'].includes(location.pathname)) {
-		return <Outlet />;
-	}
+	// TEMPORARILY DISABLED FOR DEBUGGING
+	// if (!user) {
+	// 	console.log('AppShell: No user, redirecting to signup');
+	// 	navigate('/signup');
+	// 	return null;
+	// }
 
 	const handleLogout = async () => {
 		await logout();
