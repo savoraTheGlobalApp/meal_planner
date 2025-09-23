@@ -25,6 +25,17 @@ function pickDifferent(arr: string[], avoid: string, fallback: string): string {
 	return firstDifferent ?? fallback;
 }
 
+function pickDifferentFromList(arr: string[], avoids: string[], fallback: string): string {
+	if (!arr.length) return fallback;
+	if (arr.length === 1) return arr[0];
+	for (let attempts = 0; attempts < 7; attempts++) {
+		const candidate = arr[Math.floor(Math.random() * arr.length)];
+		if (!avoids.includes(candidate)) return candidate;
+	}
+	const firstDifferent = arr.find(v => !avoids.includes(v));
+	return firstDifferent ?? fallback;
+}
+
 // Advanced meal generation with round-robin + randomness
 class MealGenerator {
 	private breakfastIndex = 0;
@@ -169,6 +180,31 @@ function generateWeek(preferences: Preferences): WeekMenu {
 			}
 		}
 		week.push(meal);
+	}
+
+	// Ensure no duplicates across week boundary (e.g., Sunday vs Monday)
+	if (week.length >= 2) {
+		const first = week[0];
+		const last = week[week.length - 1];
+		const second = week[1];
+		// Breakfast
+		if (first.breakfast === last.breakfast) {
+			first.breakfast = pickDifferentFromList(preferences.breakfast, [last.breakfast, second.breakfast], first.breakfast);
+		}
+		// Lunch dal and veg
+		if (first.lunch[0] === last.lunch[0]) {
+			first.lunch[0] = pickDifferentFromList(preferences.dal, [last.lunch[0], second.lunch[0]], first.lunch[0]);
+		}
+		if (first.lunch[1] === last.lunch[1]) {
+			first.lunch[1] = pickDifferentFromList(preferences.veg, [last.lunch[1], second.lunch[1]], first.lunch[1]);
+		}
+		// Dinner dal and veg
+		if (first.dinner[0] === last.dinner[0]) {
+			first.dinner[0] = pickDifferentFromList(preferences.dal, [last.dinner[0], second.dinner[0]], first.dinner[0]);
+		}
+		if (first.dinner[1] === last.dinner[1]) {
+			first.dinner[1] = pickDifferentFromList(preferences.veg, [last.dinner[1], second.dinner[1]], first.dinner[1]);
+		}
 	}
 	return week;
 }
