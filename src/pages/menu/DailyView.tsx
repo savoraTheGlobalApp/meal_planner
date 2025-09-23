@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-// Removed RotateCcw import - now using custom SVG icon
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
+import { sumNutrition, formatNutrition, sumNutritionWithUnknown, formatNutritionSummary } from '@/utils/nutrition';
 
 const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -60,11 +60,17 @@ export function DailyView() {
 			{/* Meals */}
 			<div className="space-y-3">
 				{/* Breakfast */}
-				<div className="card bg-gradient-to-br from-rose-50 to-pink-100 border-rose-200">
+                <div className="card bg-gradient-to-br from-rose-50 to-pink-100 border-rose-200">
 					<div className="flex items-center justify-between">
 						<div>
 							<div className="text-rose-600 text-sm font-semibold">Breakfast</div>
-							<div className="text-lg font-medium text-slate-800">{day?.breakfast ?? '-'}</div>
+                            <div className="text-lg font-medium text-slate-800">{day?.breakfast ?? '-'}</div>
+                            {day?.breakfast && (() => {
+                                const { total, unknown } = sumNutritionWithUnknown([day.breakfast]);
+                                return (
+                                    <div className="mt-1 text-xs text-slate-500">{formatNutritionSummary(total, unknown)}</div>
+                                );
+                            })()}
 						</div>
 						<button 
 							className="p-2 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-600 hover:text-rose-700 transition-all duration-200" 
@@ -79,11 +85,17 @@ export function DailyView() {
 				</div>
 
 				{/* Lunch */}
-				<div className="card bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200">
+                <div className="card bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200">
 					<div className="flex items-center justify-between">
 						<div>
 							<div className="text-amber-600 text-sm font-semibold">Lunch</div>
-							<div className="text-lg font-medium text-slate-800">{day?.lunch?.join(', ') ?? '-'}</div>
+                            <div className="text-lg font-medium text-slate-800">{day?.lunch?.join(', ') ?? '-'}</div>
+                            {day?.lunch && day.lunch.length > 0 && (() => {
+                                const { total, unknown } = sumNutritionWithUnknown(day.lunch);
+                                return (
+                                    <div className="mt-1 text-xs text-slate-500">{formatNutritionSummary(total, unknown)}</div>
+                                );
+                            })()}
 						</div>
 						<button 
 							className="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-all duration-200" 
@@ -98,11 +110,17 @@ export function DailyView() {
 				</div>
 
 				{/* Dinner */}
-				<div className="card bg-gradient-to-br from-violet-50 to-purple-100 border-violet-200">
+                <div className="card bg-gradient-to-br from-violet-50 to-purple-100 border-violet-200">
 					<div className="flex items-center justify-between">
 						<div>
 							<div className="text-violet-600 text-sm font-semibold">Dinner</div>
-							<div className="text-lg font-medium text-slate-800">{day?.dinner?.join(', ') ?? '-'}</div>
+                            <div className="text-lg font-medium text-slate-800">{day?.dinner?.join(', ') ?? '-'}</div>
+                            {day?.dinner && day.dinner.length > 0 && (() => {
+                                const { total, unknown } = sumNutritionWithUnknown(day.dinner);
+                                return (
+                                    <div className="mt-1 text-xs text-slate-500">{formatNutritionSummary(total, unknown)}</div>
+                                );
+                            })()}
 						</div>
 						<button 
 							className="p-2 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-600 hover:text-violet-700 transition-all duration-200" 
