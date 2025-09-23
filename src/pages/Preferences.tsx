@@ -63,17 +63,25 @@ export function Preferences() {
 					const selectedItems = selected[key];
 					const availableItems = available[key];
 					
-					return (
-						<div key={key} className="card">
-							<div className="flex items-center gap-3 mb-4">
-								<span className="text-2xl">{icon}</span>
-								<div>
-									<h3 className="text-lg font-semibold text-slate-800">{label}</h3>
-									<p className="text-slate-600 text-sm">
-										{selectedItems.length} of {availableItems.length} items selected
-									</p>
+						return (
+							<div key={key} className="card">
+								<div className="flex items-center justify-between mb-4">
+									<div className="flex items-center gap-3">
+										<span className="text-2xl">{icon}</span>
+										<div>
+											<h3 className="text-lg font-semibold text-slate-800">{label}</h3>
+											<p className="text-slate-600 text-sm">
+												{selectedItems.length} of {availableItems.length} items selected
+											</p>
+										</div>
+									</div>
+									<Link 
+										to={`/preferences/${key}`}
+										className="btn btn-outline"
+									>
+										Edit
+									</Link>
 								</div>
-							</div>
 
 							{selectedItems.length > 0 ? (
 								<div className="space-y-3">
