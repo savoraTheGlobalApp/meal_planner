@@ -101,7 +101,7 @@ export function WeeklyView() {
 				<button 
 					onClick={handleDownloadPDF}
 					disabled={isGeneratingPDF || !week.length}
-					className="btn btn-primary flex items-center gap-2"
+					className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					<Download size={16} />
 					{isGeneratingPDF ? 'Generating...' : 'Download PDF'}
