@@ -11,6 +11,20 @@ function pickRandom<T>(arr: T[]): T | null {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function pickDifferent(arr: string[], avoid: string, fallback: string): string {
+	// If there are fewer than 2 options, we cannot avoid a duplicate reliably
+	if (!arr.length) return fallback;
+	if (arr.length === 1) return arr[0];
+	// Try random picks up to a few times to avoid avoid-value
+	for (let attempts = 0; attempts < 5; attempts++) {
+		const candidate = arr[Math.floor(Math.random() * arr.length)];
+		if (candidate !== avoid) return candidate;
+	}
+	// As a final fallback, find first different item
+	const firstDifferent = arr.find(v => v !== avoid);
+	return firstDifferent ?? fallback;
+}
+
 // Advanced meal generation with round-robin + randomness
 class MealGenerator {
 	private breakfastIndex = 0;
@@ -130,7 +144,33 @@ function generateDay(preferences: Preferences): Meal {
 
 function generateWeek(preferences: Preferences): WeekMenu {
 	const generator = new MealGenerator(preferences);
-	return Array.from({ length: 7 }, () => generator.generateMeal());
+	const week: WeekMenu = [];
+	for (let day = 0; day < 7; day++) {
+		const meal = generator.generateMeal();
+		if (week.length) {
+			const prev = week[week.length - 1];
+			// Breakfast should not repeat on adjacent days
+			if (meal.breakfast === prev.breakfast) {
+				meal.breakfast = pickDifferent(preferences.breakfast, prev.breakfast, meal.breakfast);
+			}
+			// Lunch dal and veg should not repeat on adjacent days
+			if (meal.lunch[0] === prev.lunch[0]) {
+				meal.lunch[0] = pickDifferent(preferences.dal, prev.lunch[0], meal.lunch[0]);
+			}
+			if (meal.lunch[1] === prev.lunch[1]) {
+				meal.lunch[1] = pickDifferent(preferences.veg, prev.lunch[1], meal.lunch[1]);
+			}
+			// Dinner dal and veg should not repeat on adjacent days
+			if (meal.dinner[0] === prev.dinner[0]) {
+				meal.dinner[0] = pickDifferent(preferences.dal, prev.dinner[0], meal.dinner[0]);
+			}
+			if (meal.dinner[1] === prev.dinner[1]) {
+				meal.dinner[1] = pickDifferent(preferences.veg, prev.dinner[1], meal.dinner[1]);
+			}
+		}
+		week.push(meal);
+	}
+	return week;
 }
 
 type MenuState = {
