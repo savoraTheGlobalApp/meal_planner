@@ -13,6 +13,7 @@ export function WeeklyView() {
 	const { week, generate, regenerateMeal, loading } = useMenuStore();
 	const { user } = useAuthStore();
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+	const [showConfirm, setShowConfirm] = useState(false);
 	// No need for generation tracking - menu only generates on manual button click
 
 	// Get today's date and calculate week dates
@@ -67,6 +68,14 @@ export function WeeklyView() {
 		}
 	};
 
+	const handleRegenerateClick = () => {
+		if (week.length === 0) {
+			generate(prefs);
+			return;
+		}
+		setShowConfirm(true);
+	};
+
 	return (
 		<div className="space-y-4">
 			{/* Top row: Title and Daily view on mobile */}
@@ -78,7 +87,7 @@ export function WeeklyView() {
 			<div className="flex flex-wrap gap-2 sm:justify-end">
 				{hasPreferences && (
 					<button 
-						onClick={() => generate(prefs)}
+						onClick={handleRegenerateClick}
 						disabled={loading}
 						className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
 						title="Regenerate Menu"
@@ -100,6 +109,40 @@ export function WeeklyView() {
 				<div className="hidden md:block">
 					<Link to={`/menu/daily/${todayIndex}`} className="btn btn-outline">Daily view</Link>
 				</div>
+
+			{/* Confirmation Modal */}
+			{showConfirm && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+					<div className="absolute inset-0 bg-black/40" onClick={() => setShowConfirm(false)}></div>
+					<div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+						<div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-slate-200">
+							<h3 className="text-lg font-semibold text-slate-800">Regenerate menu?</h3>
+							<p className="text-slate-600 text-sm mt-1">This will replace your current 7-day menu with a new one.</p>
+						</div>
+						<div className="p-5 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+							<button 
+								onClick={() => setShowConfirm(false)}
+								className="btn btn-outline w-full sm:w-auto"
+							>
+								No, keep current
+							</button>
+						<button 
+							onClick={async () => { 
+								setShowConfirm(false); 
+								await generate(prefs); 
+							}}
+								disabled={loading}
+								className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg w-full sm:w-auto disabled:opacity-50"
+							>
+								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+								Yes, regenerate
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 			</div>
 
 
