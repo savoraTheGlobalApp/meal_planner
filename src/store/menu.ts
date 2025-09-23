@@ -27,9 +27,17 @@ class MealGenerator {
 	}
 
 	private shuffleDinnerArrays() {
-		// Create shuffled copies for dinner to create variety
-		const shuffledDal = [...this.preferences.dal].sort(() => Math.random() - 0.5);
-		const shuffledVeg = [...this.preferences.veg].sort(() => Math.random() - 0.5);
+		// Create shuffled copies for dinner to create variety using Fisher–Yates shuffle
+		const shuffledDal = [...this.preferences.dal];
+		for (let i = shuffledDal.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[shuffledDal[i], shuffledDal[j]] = [shuffledDal[j], shuffledDal[i]];
+		}
+		const shuffledVeg = [...this.preferences.veg];
+		for (let i = shuffledVeg.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[shuffledVeg[i], shuffledVeg[j]] = [shuffledVeg[j], shuffledVeg[i]];
+		}
 		
 		// Store shuffled arrays for dinner
 		(this as any).dinnerDalArray = shuffledDal;
