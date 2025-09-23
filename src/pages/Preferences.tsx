@@ -63,6 +63,15 @@ export function Preferences() {
 					const selectedItems = selected[key];
 					const availableItems = available[key];
 					
+						// Colorful edit button per category
+						const colorClasses: Record<string, string> = {
+							rose: 'bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200',
+							amber: 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200',
+							emerald: 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200',
+						};
+						const editBtnBase = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm';
+						const editBtnClass = `${editBtnBase} ${colorClasses[color]}`;
+
 						return (
 							<div key={key} className="card">
 								<div className="flex items-center justify-between mb-4">
@@ -77,7 +86,7 @@ export function Preferences() {
 									</div>
 									<Link 
 										to={`/preferences/${key}`}
-										className="btn btn-outline"
+										className={editBtnClass}
 									>
 										Edit
 									</Link>
