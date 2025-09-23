@@ -15,7 +15,7 @@ export function PreferencesStep() {
 	const { step } = useParams();
 	const navigate = useNavigate();
 	const cat = (order.includes(step as Category) ? (step as Category) : 'breakfast');
-	const { available, selected, addCustom, removeCustom, toggleSelected, loading } = usePrefStore();
+    const { available, selected, addCustom, removeCustom, toggleSelected, saveSelected, loading } = usePrefStore();
     const { week, generate } = useMenuStore();
     const [custom, setCustom] = useState('');
     const [showConfirm, setShowConfirm] = useState(false);
@@ -69,7 +69,14 @@ export function PreferencesStep() {
 					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'vegetable' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
 					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-between gap-2">
+                <button 
+                    onClick={async ()=>{ await saveSelected(); }}
+                    disabled={loading}
+                    className="btn btn-outline"
+                >
+                    Save
+                </button>
 					<button 
 						onClick={handleFinalButtonClick}
 						disabled={loading}

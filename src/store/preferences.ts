@@ -19,6 +19,7 @@ type PrefState = {
 	addCustom: (cat: Category, item: string) => Promise<void>;
 	removeCustom: (cat: Category, item: string) => Promise<void>;
 	toggleSelected: (cat: Category, item: string) => Promise<void>;
+    saveSelected: () => Promise<void>;
 	loadPreferences: (preferences: Preferences) => void;
 };
 
@@ -26,15 +27,15 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 	available: initialItems,
 	selected: { breakfast: [], dal: [], veg: [] },
 	loading: false,
-	addCustom: async (cat, item) => {
+    addCustom: async (cat, item) => {
 		item = item.trim();
 		if (!item) return;
 		
 		const { user } = useAuthStore.getState();
 		if (!user) return;
 		
-		set({ loading: true });
-		
+        set({ loading: true });
+        // Local-only update; persistence happens on saveSelected
 		const exists = get().available[cat].some(i => i.toLowerCase() === item.toLowerCase());
 		const newState = {
 			available: {
@@ -47,15 +48,8 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 			}
 		};
 		
-		// Update local state
+        // Update local state
 		set(newState);
-		
-		// Save to Firebase
-		const { error } = await updateUserPreferences(user.id, newState.selected);
-		if (error) {
-			console.error('Failed to save preferences to Firebase:', error);
-		}
-		
 		set({ loading: false });
 	},
 	removeCustom: async (cat, item) => {
@@ -63,7 +57,7 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 		if (!user) return;
 		
 		set({ loading: true });
-		
+        // Local-only update; persistence happens on saveSelected
 		const newState = {
 			available: {
 				...get().available,
@@ -75,15 +69,8 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 			}
 		};
 		
-		// Update local state
+        // Update local state
 		set(newState);
-		
-		// Save to Firebase
-		const { error } = await updateUserPreferences(user.id, newState.selected);
-		if (error) {
-			console.error('Failed to save preferences to Firebase:', error);
-		}
-		
 		set({ loading: false });
 	},
 	toggleSelected: async (cat, item) => {
@@ -91,7 +78,7 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 		if (!user) return;
 		
 		set({ loading: true });
-		
+        // Local-only update; persistence happens on saveSelected
 		const isOn = get().selected[cat].includes(item);
 		const newState = {
 			selected: {
@@ -100,17 +87,21 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 			}
 		};
 		
-		// Update local state
+        // Update local state
 		set(newState);
-		
-		// Save to Firebase
-		const { error } = await updateUserPreferences(user.id, newState.selected);
-		if (error) {
-			console.error('Failed to save preferences to Firebase:', error);
-		}
-		
 		set({ loading: false });
 	},
+    saveSelected: async () => {
+        const { user } = useAuthStore.getState();
+        if (!user) return;
+        set({ loading: true });
+        const current = get().selected;
+        const { error } = await updateUserPreferences(user.id, current);
+        if (error) {
+            console.error('Failed to save preferences to Firebase:', error);
+        }
+        set({ loading: false });
+    },
 	loadPreferences: (preferences: any) => {
 		// Handle migration from old data structure that might include 'salad'
 		const migratedPreferences: Preferences = {
