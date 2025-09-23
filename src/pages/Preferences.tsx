@@ -7,7 +7,7 @@ export function Preferences() {
 	const categories = [
 		{ key: 'breakfast' as const, label: 'Breakfast', color: 'rose', icon: '🌅' },
 		{ key: 'dal' as const, label: 'Dal', color: 'amber', icon: '🍲' },
-		{ key: 'veg' as const, label: 'Vegetables', color: 'emerald', icon: '🥬' }
+		{ key: 'veg' as const, label: 'Vegetables', color: 'emerald', icon: '🍅' }
 	];
 
 	// Only count items from the current categories (excluding any old salad data)
