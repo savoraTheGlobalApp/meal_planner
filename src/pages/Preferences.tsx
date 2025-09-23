@@ -20,11 +20,6 @@ export function Preferences() {
 			{/* Header */}
 			<div className="card bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
 				<div className="flex items-center gap-4">
-					<div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-						<svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
-					</div>
 					<div>
 						<h1 className="text-2xl font-bold text-slate-800">Your Preferences</h1>
 						<p className="text-slate-600">
@@ -41,17 +36,25 @@ export function Preferences() {
 			{totalSelected > 0 && (
 				<div className="card bg-gradient-to-r from-emerald-50 to-teal-100 border-emerald-200">
 					<div className="text-center">
-						<h3 className="text-lg font-semibold text-slate-800 mb-2">Preference Summary</h3>
-						<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-							{categories.map(({ key, label, color, icon }) => (
-								<div key={key} className="text-center">
-									<div className="text-2xl mb-1">{icon}</div>
-									<div className={`chip chip-${color} justify-center`}>
-										{selected[key].length}
+						<h3 className="text-lg font-semibold text-slate-800 mb-4">Preference Summary</h3>
+						<div className="grid grid-cols-3 gap-4">
+							{categories.map(({ key, label, color, icon }) => {
+								const colorMap: Record<string, { bg: string; ring: string; text: string; chip: string }> = {
+									rose: { bg: 'bg-rose-50', ring: 'ring-rose-200', text: 'text-rose-600', chip: 'chip-rose' },
+									amber: { bg: 'bg-amber-50', ring: 'ring-amber-200', text: 'text-amber-600', chip: 'chip-amber' },
+									emerald: { bg: 'bg-emerald-50', ring: 'ring-emerald-200', text: 'text-emerald-600', chip: 'chip-emerald' },
+								};
+								const c = colorMap[color];
+								return (
+									<div key={key} className="flex flex-col items-center">
+										<div className={`w-12 h-12 rounded-full flex items-center justify-center ${c.bg} ${c.text} ring-1 ${c.ring} mb-2`}>
+											<span className="text-xl">{icon}</span>
+										</div>
+										<div className={`chip ${c.chip} justify-center mb-1`}>{selected[key].length}</div>
+										<p className="text-xs text-slate-600">{label}</p>
 									</div>
-									<p className="text-xs text-slate-600 mt-1">{label}</p>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					</div>
 				</div>
@@ -119,25 +122,6 @@ export function Preferences() {
 						</div>
 					);
 				})}
-			</div>
-
-			{/* Quick Edit Button */}
-			<div className="card bg-gradient-to-r from-blue-50 to-indigo-100 border-blue-200">
-				<div className="flex items-center justify-between">
-					<div>
-						<h3 className="text-lg font-semibold text-slate-800 mb-1">Want to make changes?</h3>
-						<p className="text-slate-600 text-sm">Update your food preferences anytime</p>
-					</div>
-					<Link 
-						to="/preferences/breakfast" 
-						className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-					>
-						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-						</svg>
-						Edit Preferences
-					</Link>
-				</div>
 			</div>
 		</div>
 	);
