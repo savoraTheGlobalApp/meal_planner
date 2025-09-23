@@ -78,37 +78,54 @@ export function WeeklyView() {
 
 	return (
 		<div className="space-y-4">
-			{/* Top row: Title and Daily view on mobile */}
+			{/* Top row: Title and Regenerate on mobile */}
 			<div className="flex items-center justify-between">
 				<h2 className="text-xl font-semibold">Weekly Menu</h2>
-				<Link to={`/menu/daily/${todayIndex}`} className="btn btn-outline sm:hidden">Daily view</Link>
-			</div>
-			{/* Action row: Regenerate + Download (and Daily view for larger screens) */}
-			<div className="flex flex-wrap gap-2 sm:justify-end">
 				{hasPreferences && (
 					<button 
 						onClick={handleRegenerateClick}
 						disabled={loading}
-						className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
+						className="btn btn-outline md:hidden"
 						title="Regenerate Menu"
 					>
 						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 						</svg>
-						{loading ? 'Generating...' : 'Regenerate'}
+						{loading ? 'Generating...' : 'New Menu'}
 					</button>
 				)}
+			</div>
+			{/* Action row: Daily view (visible), Regenerate (md+), PDF (right) */}
+			<div className="flex flex-wrap items-center gap-2 justify-between sm:justify-end">
+				{/* Mobile Daily view on the left of the row */}
+				<Link to={`/menu/daily/${todayIndex}`} className="inline-flex sm:hidden items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow">Daily view</Link>
+				<div className="hidden md:block">
+					<Link to={`/menu/daily/${todayIndex}`} className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow">Daily view</Link>
+				</div>
+				{hasPreferences && (
+					<div className="hidden md:block">
+						<button 
+							onClick={handleRegenerateClick}
+							disabled={loading}
+							className="btn btn-outline"
+							title="Regenerate Menu"
+						>
+							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+							{loading ? 'Generating...' : 'New Menu'}
+						</button>
+					</div>
+				)}
+
 				<button 
 					onClick={handleDownloadPDF}
 					disabled={isGeneratingPDF || !week.length}
-					className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
+					className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed ml-auto sm:ml-0 order-2"
 				>
 					<Download size={16} />
-					{isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+					{isGeneratingPDF ? 'Generating...' : 'PDF'}
 				</button>
-				<div className="hidden md:block">
-					<Link to={`/menu/daily/${todayIndex}`} className="btn btn-outline">Daily view</Link>
-				</div>
 
 			{/* Confirmation Modal */}
 			{showConfirm && (
@@ -116,7 +133,7 @@ export function WeeklyView() {
 					<div className="absolute inset-0 bg-black/40" onClick={() => setShowConfirm(false)}></div>
 					<div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
 						<div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-slate-200">
-							<h3 className="text-lg font-semibold text-slate-800">Regenerate menu?</h3>
+							<h3 className="text-lg font-semibold text-slate-800">Want a new Menu?</h3>
 							<p className="text-slate-600 text-sm mt-1">This will replace your current 7-day menu with a new one.</p>
 						</div>
 						<div className="p-5 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
@@ -124,7 +141,7 @@ export function WeeklyView() {
 								onClick={() => setShowConfirm(false)}
 								className="btn btn-outline w-full sm:w-auto"
 							>
-								No, keep current
+								No, Keep current Menu
 							</button>
 						<button 
 							onClick={async () => { 
@@ -137,7 +154,7 @@ export function WeeklyView() {
 								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 								</svg>
-								Yes, regenerate
+								Yes, Get a new Menu
 							</button>
 						</div>
 					</div>
