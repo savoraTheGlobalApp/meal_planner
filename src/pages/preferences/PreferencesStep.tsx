@@ -18,7 +18,6 @@ export function PreferencesStep() {
     const { available, selected, addCustom, removeCustom, toggleSelected, saveSelected, loading } = usePrefStore();
     const { week, generate } = useMenuStore();
     const [custom, setCustom] = useState('');
-    const [showConfirm, setShowConfirm] = useState(false);
 
 	const items = useMemo(() => available[cat].slice().sort((a,b)=>a.localeCompare(b)), [available, cat]);
 	const isLast = cat === 'veg';
@@ -27,19 +26,6 @@ export function PreferencesStep() {
 	// Check if menu already exists
 	const hasMenu = week.length > 0;
 	
-	// Handle the final button click (generate/regenerate menu)
-    const handleFinalButtonClick = async () => {
-        if (isLast) {
-            if (week.length === 0) {
-                await generate(selected);
-                navigate('/menu/weekly');
-                return;
-            }
-            setShowConfirm(true);
-        } else {
-            navigate(nextPath);
-        }
-    };
 
 	return (
 		<div className="max-w-2xl space-y-4">
@@ -69,43 +55,38 @@ export function PreferencesStep() {
 					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'vegetable' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
 					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
-            <div className="mt-6 flex justify-between gap-2">
-                <button 
-                    onClick={async ()=>{ await saveSelected(); }}
-                    disabled={loading}
-                    className="btn btn-outline"
-                >
-                    Save
-                </button>
-					<button 
-						onClick={handleFinalButtonClick}
-						disabled={loading}
-						className="btn btn-primary"
-					>
-						{isLast 
-							? (hasMenu ? 'Regenerate Menu' : 'Generate 7-Day Menu')
-							: nextLabel[cat]
-						}
-					</button>
+				<div className={`mt-6 flex ${hasMenu ? 'justify-end' : 'justify-between'} gap-2`}>
+                {hasMenu ? (
+                    // If menu exists, show only Save button
+                    <button 
+                        onClick={async ()=>{ await saveSelected(); }}
+                        disabled={loading}
+                        className="btn btn-outline"
+                    >
+                        Save
+                    </button>
+                ) : (
+                    // If no menu exists, show navigation/generation button
+                    <button 
+                        onClick={async ()=>{
+                            await saveSelected();
+                            if (isLast) {
+                                await generate(selected);
+                                navigate('/menu/weekly');
+                            } else {
+                                navigate(nextPath);
+                            }
+                        }}
+                        disabled={loading}
+                        className="btn btn-primary"
+                    >
+                        {isLast 
+                            ? 'Generate 7-Day Menu'
+                            : nextLabel[cat]
+                        }
+                    </button>
+                )}
 				</div>
-            {/* Confirmation Modal */}
-            {showConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40" onClick={()=>setShowConfirm(false)}></div>
-                    <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-slate-200">
-                            <h3 className="text-lg font-semibold text-slate-800">Regenerate menu?</h3>
-                            <p className="text-slate-600 text-sm mt-1">This will replace your current 7-day menu with a new one.</p>
-                        </div>
-                        <div className="p-5 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
-                            <button className="btn btn-outline w-full sm:w-auto" onClick={()=>setShowConfirm(false)}>No, keep current</button>
-                            <button className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg w-full sm:w-auto disabled:opacity-50" onClick={async ()=>{ setShowConfirm(false); await generate(selected); navigate('/menu/weekly'); }}>
-                                Yes, regenerate
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 			</div>
 			<div className="flex items-center justify-between">
 				{cat !== 'breakfast' ? (
