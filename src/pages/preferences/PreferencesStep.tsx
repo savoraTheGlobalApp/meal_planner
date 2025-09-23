@@ -6,8 +6,8 @@ import { X } from 'lucide-react';
 
 const order: Category[] = ['breakfast','dal','veg'];
 const nextLabel: Record<Category,string> = {
-	breakfast: 'Click next to select your Dal',
-	dal: 'Click next to select your Vegetable',
+	breakfast: 'Select your Dal',
+	dal: 'Select your Vegetable',
 	veg: 'Generate 7-day Menu',
 }
 
