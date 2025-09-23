@@ -55,43 +55,54 @@ export function PreferencesStep() {
 					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'vegetable' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
 					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
-				<div className={`mt-6 flex ${hasMenu ? 'justify-end' : 'justify-between'} gap-2`}>
+            <div className="mt-6 flex justify-between gap-2">
                 {hasMenu ? (
-                    // If menu exists, show only Save button
-                    <button 
-                        onClick={async ()=>{ await saveSelected(); }}
-                        disabled={loading}
-                        className="btn btn-outline"
-                    >
-                        Save
-                    </button>
+                    // If menu exists, show only Save button on the right
+                    <div className="flex justify-end w-full">
+                        <button 
+                            onClick={async ()=>{ await saveSelected(); }}
+                            disabled={loading}
+                            className="btn btn-outline"
+                        >
+                            Save
+                        </button>
+                    </div>
                 ) : (
-                    // If no menu exists, show navigation/generation button
-                    <button 
-                        onClick={async ()=>{
-                            await saveSelected();
-                            if (isLast) {
-                                await generate(selected);
-                                navigate('/menu/weekly');
-                            } else {
-                                navigate(nextPath);
+                    // If no menu exists, show back button on left and navigation button on right
+                    <>
+                        {cat !== 'breakfast' ? (
+                            <button 
+                                onClick={()=>navigate(`/preferences/${order[order.indexOf(cat)-1]}`)}
+                                className="btn btn-ghost"
+                            >
+                                Back
+                            </button>
+                        ) : (
+                            <div />
+                        )}
+                        <button 
+                            onClick={async ()=>{
+                                await saveSelected();
+                                if (isLast) {
+                                    await generate(selected);
+                                    navigate('/menu/weekly');
+                                } else {
+                                    navigate(nextPath);
+                                }
+                            }}
+                            disabled={loading}
+                            className="btn btn-primary"
+                        >
+                            {isLast 
+                                ? 'Generate 7-Day Menu'
+                                : nextLabel[cat]
                             }
-                        }}
-                        disabled={loading}
-                        className="btn btn-primary"
-                    >
-                        {isLast 
-                            ? 'Generate 7-Day Menu'
-                            : nextLabel[cat]
-                        }
-                    </button>
+                        </button>
+                    </>
                 )}
 				</div>
 			</div>
-			<div className="flex items-center justify-between">
-				{cat !== 'breakfast' ? (
-					<button className="btn btn-ghost" onClick={()=>navigate(`/preferences/${order[order.indexOf(cat)-1]}`)}>Back</button>
-				): <div />}
+			<div className="flex items-center justify-end">
 				<Link to="/home" className="btn btn-outline">Skip for now</Link>
 			</div>
 		</div>
