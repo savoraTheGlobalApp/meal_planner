@@ -3,7 +3,7 @@ import { useNotificationStore } from '@/store/notifications';
 import { useState } from 'react';
 import { updateUserName } from '@/services/firebaseService';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { HelpCircle, ArrowLeft } from 'lucide-react';
+import { HelpCircle, ArrowLeft, Menu as MenuIcon } from 'lucide-react';
 
 export function Profile() {
     const { user, logout } = useAuthStore();
@@ -62,7 +62,7 @@ export function Profile() {
                 </div>
                 
                 <div className="card space-y-4">
-                    <h2 className="text-xl font-semibold">💡 Tips & Help</h2>
+                    <h2 className="text-xl font-semibold">Tips & Help</h2>
                     <div className="space-y-3 text-sm">
                         <div className="flex items-start gap-3">
                             <span className="text-blue-500 font-semibold">•</span>
@@ -92,17 +92,36 @@ export function Profile() {
 
 	return (
 		<div className="max-w-xl">
-            <div className="card space-y-4 -mt-2">
-                <h2 className="text-xl font-semibold">Profile</h2>
-				<div>
-					<div className="text-slate-300">Name</div>
-					<div className="font-medium">{user.name}</div>
-				</div>
-				<div>
-					<div className="text-slate-300">Email</div>
-					<div className="font-medium">{user.email}</div>
-				</div>
-			</div>
+            <div className="card space-y-6 -mt-2">
+                <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                        {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-slate-800">Hey {user.name.split(' ')[0]}!</h2>
+                        <p className="text-slate-500 text-sm">{user.email}</p>
+                    </div>
+                </div>
+                <p className="text-slate-600 text-sm">Hope you’re enjoying your meals :)</p>
+            </div>
+
+            <div className="card mt-4 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200">
+                <div className="flex items-center gap-3 text-slate-700">
+                    <div className="shrink-0 rounded-full bg-white p-2 shadow-sm">
+                        <HelpCircle size={18} className="text-indigo-600" />
+                    </div>
+                    <p className="text-sm">
+                        Do check out the Tips & Help button in the upper left corner for quick hints and guidance.
+                    </p>
+                </div>
+            </div>
+
+            <div className="card mt-4 bg-gradient-to-br from-orange-100 to-red-100 border border-orange-200">
+                <div className="text-center py-4">
+                    <h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye stress, hello Meals.</h3>
+                    <p className="text-sm text-orange-600">Your meal planning journey starts here</p>
+                </div>
+            </div>
 
             {/* Settings Modal */}
             {isSettingsOpen && (
