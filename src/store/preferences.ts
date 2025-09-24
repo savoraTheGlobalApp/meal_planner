@@ -109,14 +109,33 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 			dal: preferences.dal || [],
 			veg: preferences.veg || []
 		};
-		
 		// If there's old salad data, we can optionally migrate some items to vegetables
 		// For now, we'll just ignore the salad data
 		if (preferences.salad && Array.isArray(preferences.salad)) {
 			console.log('Found old salad data, ignoring:', preferences.salad);
 		}
-		
-		set({ selected: migratedPreferences });
+
+		// Ensure available lists always include any custom items that were previously saved
+		function mergeAvailable(base: string[], selected: string[]): string[] {
+			const lower = new Set(base.map(i => i.toLowerCase()));
+			const merged = base.slice();
+			for (const item of selected) {
+				if (!lower.has(item.toLowerCase())) {
+					merged.push(item);
+					lower.add(item.toLowerCase());
+				}
+			}
+			return merged;
+		}
+
+		set({
+			selected: migratedPreferences,
+			available: {
+				breakfast: mergeAvailable(initialItems.breakfast, migratedPreferences.breakfast),
+				dal: mergeAvailable(initialItems.dal, migratedPreferences.dal),
+				veg: mergeAvailable(initialItems.veg, migratedPreferences.veg),
+			}
+		});
 	}
 }));
 
