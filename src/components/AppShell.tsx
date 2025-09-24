@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, User, Heart, LogOut, Bell, Menu } from 'lucide-react';
+import { Home as HomeIcon, User, Heart, LogOut, Bell, Menu, HelpCircle } from 'lucide-react';
 import { useNotificationStore } from '@/store/notifications';
 import appLogo from '/logo.png';
 import { useAuthStore } from '../store/auth';
@@ -50,6 +50,7 @@ export function AppShell() {
 	};
 
     const isNotifications = location.pathname.startsWith('/notifications');
+    const isProfile = location.pathname.startsWith('/profile');
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 	return (
 		<div className="min-h-screen flex flex-col">
@@ -64,9 +65,19 @@ export function AppShell() {
                 onClick={() => profileMenuOpen && setProfileMenuOpen(false)}
             >
 				<div className="container h-14 flex items-center justify-between">
-                        <Link to="/home" className="flex items-center gap-2 text-lg font-semibold bg-gradient-to-r from-sky-600 to-fuchsia-600 bg-clip-text text-transparent">
-                            <img src={appLogo} alt="Meal Planner" className="w-6 h-6 rounded" /> Meal Planner
-					</Link>
+                        {isProfile ? (
+                            <button 
+                                onClick={() => navigate('/profile?help=true')}
+                                className="flex items-center gap-2 text-lg font-semibold text-slate-600 hover:text-slate-800 transition-colors"
+                                title="Help & Tips"
+                            >
+                                <HelpCircle size={24} />
+                            </button>
+                        ) : (
+                            <Link to="/home" className="flex items-center gap-2 text-lg font-semibold bg-gradient-to-r from-sky-600 to-fuchsia-600 bg-clip-text text-transparent">
+                                <img src={appLogo} alt="Meal Planner" className="w-6 h-6 rounded" /> Meal Planner
+                            </Link>
+                        )}
                         <div className="flex items-center gap-2">
                             {location.pathname.startsWith('/profile') ? (
                                 <div className="relative">
