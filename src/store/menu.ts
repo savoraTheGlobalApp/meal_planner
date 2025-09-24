@@ -212,6 +212,7 @@ function generateWeek(preferences: Preferences): WeekMenu {
 type MenuState = {
 	week: WeekMenu;
 	loading: boolean;
+	regeneratingMeal: string | null; // Format: "dayIndex-mealType" e.g., "0-breakfast", "2-lunch"
 	generate: (prefs: Preferences) => Promise<void>;
 	regenerateMeal: (dayIndex: number, which: 'breakfast'|'lunch'|'dinner', prefs: Preferences) => Promise<void>;
 	clearMenu: () => Promise<void>;
@@ -221,6 +222,7 @@ type MenuState = {
 export const useMenuStore = create<MenuState>((set, get) => ({
 	week: [],
 	loading: false,
+	regeneratingMeal: null,
 	generate: async (prefs) => {
 		const { user } = useAuthStore.getState();
 		if (!user) return;
@@ -243,18 +245,94 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 		const { user } = useAuthStore.getState();
 		if (!user) return;
 		
-		set({ loading: true });
+		const mealId = `${dayIndex}-${which}`;
+		set({ regeneratingMeal: mealId });
 		
 		const copy = get().week.slice();
 		if (!copy[dayIndex]) {
-			set({ loading: false });
+			set({ regeneratingMeal: null });
 			return;
 		}
 		
-		const generated = generateDay(prefs);
+		// Generate a new meal with fresh indices to avoid selecting the same item
+		const generator = new MealGenerator(prefs);
+		const generated = generator.generateMeal();
+		
+		// Ensure we don't select the same item if current meal is the first in preferences
+		const currentMeal = copy[dayIndex][which];
+		let newMeal = generated[which];
+		
+		// If regenerating breakfast and current is first preference, try to get different one
+		if (which === 'breakfast' && currentMeal === prefs.breakfast[0]) {
+			let attempts = 0;
+			while (newMeal === currentMeal && attempts < 10) {
+				const newGenerator = new MealGenerator(prefs);
+				newMeal = newGenerator.generateMeal().breakfast;
+				attempts++;
+			}
+		}
+		// If regenerating lunch and current dal/veg is first preference, try to get different one
+		else if (which === 'lunch') {
+			const currentLunch = copy[dayIndex].lunch;
+			const newLunch = generated.lunch;
+			
+			// Check if dal is the same and it's the first preference
+			if (currentLunch[0] === prefs.dal[0] && newLunch[0] === currentLunch[0]) {
+				let attempts = 0;
+				while (newLunch[0] === currentLunch[0] && attempts < 10) {
+					const newGenerator = new MealGenerator(prefs);
+					const tempLunch = newGenerator.generateMeal().lunch;
+					newLunch[0] = tempLunch[0];
+					attempts++;
+				}
+			}
+			
+			// Check if veg is the same and it's the first preference
+			if (currentLunch[1] === prefs.veg[0] && newLunch[1] === currentLunch[1]) {
+				let attempts = 0;
+				while (newLunch[1] === currentLunch[1] && attempts < 10) {
+					const newGenerator = new MealGenerator(prefs);
+					const tempLunch = newGenerator.generateMeal().lunch;
+					newLunch[1] = tempLunch[1];
+					attempts++;
+				}
+			}
+			
+			newMeal = newLunch;
+		}
+		// If regenerating dinner and current dal/veg is first preference, try to get different one
+		else if (which === 'dinner') {
+			const currentDinner = copy[dayIndex].dinner;
+			const newDinner = generated.dinner;
+			
+			// Check if dal is the same and it's the first preference
+			if (currentDinner[0] === prefs.dal[0] && newDinner[0] === currentDinner[0]) {
+				let attempts = 0;
+				while (newDinner[0] === currentDinner[0] && attempts < 10) {
+					const newGenerator = new MealGenerator(prefs);
+					const tempDinner = newGenerator.generateMeal().dinner;
+					newDinner[0] = tempDinner[0];
+					attempts++;
+				}
+			}
+			
+			// Check if veg is the same and it's the first preference
+			if (currentDinner[1] === prefs.veg[0] && newDinner[1] === currentDinner[1]) {
+				let attempts = 0;
+				while (newDinner[1] === currentDinner[1] && attempts < 10) {
+					const newGenerator = new MealGenerator(prefs);
+					const tempDinner = newGenerator.generateMeal().dinner;
+					newDinner[1] = tempDinner[1];
+					attempts++;
+				}
+			}
+			
+			newMeal = newDinner;
+		}
+		
 		copy[dayIndex] = {
 			...copy[dayIndex],
-			[which]: generated[which],
+			[which]: newMeal,
 		};
 		
 		set({ week: copy });
@@ -265,7 +343,7 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 			console.error('Failed to save menu to Firebase:', error);
 		}
 		
-		set({ loading: false });
+		set({ regeneratingMeal: null });
 	},
 	clearMenu: async () => {
 		const { user } = useAuthStore.getState();

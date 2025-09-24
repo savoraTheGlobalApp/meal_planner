@@ -10,7 +10,7 @@ const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 export function WeeklyView() {
 	const prefs = usePrefStore(s => s.selected);
-	const { week, generate, regenerateMeal, loading } = useMenuStore();
+	const { week, generate, regenerateMeal, loading, regeneratingMeal } = useMenuStore();
 	const { user } = useAuthStore();
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 	const [showConfirm, setShowConfirm] = useState(false);
@@ -190,31 +190,64 @@ export function WeeklyView() {
 								<div key={`b-${i}`} className={`card-compact ${isToday ? 'ring-2 ring-blue-200' : ''}`}>
 									<div className="flex items-center justify-between">
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.breakfast ?? '-'}</span>
-										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} title="Regenerate breakfast">
+									<button 
+										className="regen flex-shrink-0" 
+										onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} 
+										title="Regenerate breakfast"
+										disabled={regeneratingMeal !== null}
+									>
+										{regeneratingMeal === `${originalIndex}-breakfast` ? (
+											<svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										) : (
 											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 											</svg>
-										</button>
+										)}
+									</button>
 									</div>
 								</div>
 								<div key={`l-${i}`} className={`card-compact ${isToday ? 'ring-2 ring-blue-200' : ''}`}>
 									<div className="flex items-center justify-between">
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
-										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} title="Regenerate lunch">
+									<button 
+										className="regen flex-shrink-0" 
+										onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} 
+										title="Regenerate lunch"
+										disabled={regeneratingMeal !== null}
+									>
+										{regeneratingMeal === `${originalIndex}-lunch` ? (
+											<svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										) : (
 											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 											</svg>
-										</button>
+										)}
+									</button>
 									</div>
 								</div>
 								<div key={`d-${i}`} className={`card-compact ${isToday ? 'ring-2 ring-blue-200' : ''}`}>
 									<div className="flex items-center justify-between">
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
-										<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} title="Regenerate dinner">
+									<button 
+										className="regen flex-shrink-0" 
+										onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} 
+										title="Regenerate dinner"
+										disabled={regeneratingMeal !== null}
+									>
+										{regeneratingMeal === `${originalIndex}-dinner` ? (
+											<svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										) : (
 											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 											</svg>
-										</button>
+										)}
+									</button>
 									</div>
 								</div>
 							</>
@@ -252,10 +285,21 @@ export function WeeklyView() {
 								</div>
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.breakfast ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} title="Regenerate breakfast">
-										<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-										</svg>
+									<button 
+										className="regen flex-shrink-0" 
+										onClick={()=>regenerateMeal(originalIndex,'breakfast', prefs)} 
+										title="Regenerate breakfast"
+										disabled={regeneratingMeal !== null}
+									>
+										{regeneratingMeal === `${originalIndex}-breakfast` ? (
+											<svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										) : (
+											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										)}
 									</button>
 								</div>
 							</div>
@@ -267,10 +311,21 @@ export function WeeklyView() {
 								</div>
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} title="Regenerate lunch">
-										<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-										</svg>
+									<button 
+										className="regen flex-shrink-0" 
+										onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} 
+										title="Regenerate lunch"
+										disabled={regeneratingMeal !== null}
+									>
+										{regeneratingMeal === `${originalIndex}-lunch` ? (
+											<svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										) : (
+											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										)}
 									</button>
 								</div>
 							</div>
@@ -282,10 +337,21 @@ export function WeeklyView() {
 								</div>
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
-									<button className="regen flex-shrink-0" onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} title="Regenerate dinner">
-										<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-										</svg>
+									<button 
+										className="regen flex-shrink-0" 
+										onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} 
+										title="Regenerate dinner"
+										disabled={regeneratingMeal !== null}
+									>
+										{regeneratingMeal === `${originalIndex}-dinner` ? (
+											<svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										) : (
+											<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+											</svg>
+										)}
 									</button>
 								</div>
 							</div>

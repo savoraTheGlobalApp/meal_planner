@@ -10,7 +10,7 @@ export function DailyView() {
 	const { dayIndex = '0' } = useParams();
 	const i = Math.max(0, Math.min(6, parseInt(dayIndex))); 
 	const prefs = usePrefStore(s => s.selected);
-	const { week, generate, regenerateMeal } = useMenuStore();
+	const { week, generate, regenerateMeal, regeneratingMeal } = useMenuStore();
 	const navigate = useNavigate();
 
 	// Get today's date and calculate the date for the current day
@@ -73,13 +73,20 @@ export function DailyView() {
                             })()}
 						</div>
 						<button 
-							className="p-2 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-600 hover:text-rose-700 transition-all duration-200" 
+							className="p-2 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-600 hover:text-rose-700 transition-all duration-200 disabled:opacity-50" 
 							onClick={()=>regenerateMeal(i,'breakfast', prefs)} 
 							title="Regenerate breakfast"
+							disabled={regeneratingMeal !== null}
 						>
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-							</svg>
+							{regeneratingMeal === `${i}-breakfast` ? (
+								<svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							) : (
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							)}
 						</button>
 					</div>
 				</div>
@@ -98,13 +105,20 @@ export function DailyView() {
                             })()}
 						</div>
 						<button 
-							className="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-all duration-200" 
+							className="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-all duration-200 disabled:opacity-50" 
 							onClick={()=>regenerateMeal(i,'lunch', prefs)} 
 							title="Regenerate lunch"
+							disabled={regeneratingMeal !== null}
 						>
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-							</svg>
+							{regeneratingMeal === `${i}-lunch` ? (
+								<svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							) : (
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							)}
 						</button>
 					</div>
 				</div>
@@ -123,13 +137,20 @@ export function DailyView() {
                             })()}
 						</div>
 						<button 
-							className="p-2 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-600 hover:text-violet-700 transition-all duration-200" 
+							className="p-2 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-600 hover:text-violet-700 transition-all duration-200 disabled:opacity-50" 
 							onClick={()=>regenerateMeal(i,'dinner', prefs)} 
 							title="Regenerate dinner"
+							disabled={regeneratingMeal !== null}
 						>
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-							</svg>
+							{regeneratingMeal === `${i}-dinner` ? (
+								<svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							) : (
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							)}
 						</button>
 					</div>
 				</div>
