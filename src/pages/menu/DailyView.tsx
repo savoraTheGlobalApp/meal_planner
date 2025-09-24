@@ -42,7 +42,7 @@ export function DailyView() {
 	const day = week[i];
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 pb-28 md:pb-0">
 			{/* Header */}
 			<div className="flex items-center justify-between">
 				<div>
@@ -156,7 +156,30 @@ export function DailyView() {
 				</div>
 			</div>
 
-			{/* Navigation */}
+		{/* Navigation */}
+		{/* Desktop/Tablet inline nav */}
+		<div className="hidden md:flex justify-between">
+			<button 
+				className="btn btn-outline flex items-center gap-2" 
+				onClick={()=>navigate(`/menu/daily/${(i+6)%7}`)}
+			>
+				<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+				</svg>
+				Prev
+			</button>
+			<button 
+				className="btn btn-primary flex items-center gap-2" 
+				onClick={()=>navigate(`/menu/daily/${(i+1)%7}`)}
+			>
+				Next
+				<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+				</svg>
+			</button>
+		</div>
+		{/* Mobile fixed nav above bottom bar */}
+		<div className="md:hidden fixed inset-x-0 bottom-16 px-4 z-40">
 			<div className="flex justify-between">
 				<button 
 					className="btn btn-outline flex items-center gap-2" 
@@ -177,6 +200,7 @@ export function DailyView() {
 					</svg>
 				</button>
 			</div>
+		</div>
 		</div>
 	);
 }
