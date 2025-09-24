@@ -4,6 +4,7 @@ import { useNotificationStore } from '@/store/notifications';
 import appLogo from '/logo.png';
 import { useAuthStore } from '../store/auth';
 import { useState, useEffect } from 'react';
+import { LoadingScreen } from './LoadingScreen';
 
 export function AppShell() {
 	const { user, loading, logout } = useAuthStore();
@@ -35,13 +36,9 @@ export function AppShell() {
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, [lastScrollY]);
 
-	// Show loading spinner while checking authentication
+	// Show branded loading screen while checking authentication
 	if (loading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand"></div>
-			</div>
-		);
+		return <LoadingScreen />;
 	}
 
 	const handleLogout = async () => {
