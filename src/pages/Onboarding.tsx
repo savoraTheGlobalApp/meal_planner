@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, CheckCircle, Utensils, Salad } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Utensils } from 'lucide-react';
+import appLogo from '/logo.png';
 
 const onboardingScreens = [
   {
@@ -137,7 +138,7 @@ export function Onboarding() {
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-slate-200">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2 text-lg font-semibold bg-gradient-to-r from-sky-600 to-fuchsia-600 bg-clip-text text-transparent">
-            <Salad className="text-brand" />
+            <img src={appLogo} alt="Meal Planner" className="w-6 h-6 rounded" />
             Meal Planner
           </div>
           <Link 

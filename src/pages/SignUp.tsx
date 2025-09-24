@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
-import { Salad } from 'lucide-react';
 import { getFirebaseErrorMessage, extractFirebaseErrorCode } from '../utils/errorMessages';
+import appLogo from '/logo.png';
 
 export function SignUp() {
 	const { signUp, loading, user } = useAuthStore();
@@ -50,7 +50,7 @@ export function SignUp() {
 			<div className="max-w-md w-full space-y-8">
 				<div className="text-center">
 					<Link to="/" className="flex items-center justify-center gap-2 text-2xl font-bold bg-gradient-to-r from-sky-600 to-fuchsia-600 bg-clip-text text-transparent">
-						<Salad className="text-brand" />
+						<img src={appLogo} alt="Meal Planner" className="w-8 h-8 rounded" />
 						Meal Planner
 					</Link>
 					<h2 className="mt-6 text-3xl font-extrabold text-gray-900">
