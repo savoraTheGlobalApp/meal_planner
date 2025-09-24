@@ -244,11 +244,12 @@ npx cap add android
 npm run build
 ```
 
-### Step 5: Sync Assets to Android Project
+### Step 5: Sync Web Build to the Android Project
 
 ```bash
-# Copy web assets to Android project
-npx cap copy
+# Sync web build, Capacitor config and native plugins to the Android project
+# (runs copy under the hood and also updates native plugin versions)
+npx cap sync android
 
 # Open project in Android Studio
 npx cap open android
@@ -325,8 +326,8 @@ npx cap open android
 # Build web app
 npm run build
 
-# Copy assets to Android
-npx cap copy
+# Sync web build and native plugins to Android
+npx cap sync android
 
 # Open in Android Studio
 npx cap open android
