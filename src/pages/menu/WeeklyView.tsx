@@ -267,10 +267,13 @@ export function WeeklyView() {
 						<div key={dayName} className={`card ${isToday ? 'ring-2 ring-blue-200 bg-blue-50' : ''}`}>
 							<div className="flex items-center justify-between mb-4">
 								<div>
-									<h3 className={`font-semibold text-lg ${isToday ? 'text-blue-600' : 'text-slate-800'}`}>
+                            <h3 className={`font-semibold text-lg ${isToday ? 'text-blue-600' : 'text-slate-800'}`}>
 										{dayName}
 									</h3>
-									<p className="text-sm text-slate-500">{date.getDate()}/{date.getMonth() + 1}</p>
+                            <p className="text-sm text-slate-500">
+                                {date.getDate()}/{date.getMonth() + 1}
+                                {isToday && <span className="ml-1 text-blue-600 font-medium">(Today)</span>}
+                            </p>
 								</div>
 								<Link to={`/menu/daily/${originalIndex}`} className="text-sm text-brand hover:underline font-medium">
 									View Details
