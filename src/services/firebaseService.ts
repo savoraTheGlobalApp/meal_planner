@@ -128,3 +128,12 @@ export const clearUserMenu = async (userId: string) => {
     return { error: error.message };
   }
 };
+
+export const updateUserName = async (userId: string, name: string) => {
+  try {
+    await updateDoc(doc(db, 'users', userId), { name });
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};
