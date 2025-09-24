@@ -245,7 +245,66 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 		
 		set({ loading: true });
 		
-		const newWeek = generateWeek(prefs);
+		let newWeek = generateWeek(prefs);
+		// Post-process to ensure no consecutive duplicates in the in-app order
+		// In-app shows days starting from today (not Monday). Give preference to this order.
+		const today = new Date();
+		const todayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Mon=0..Sun=6
+		
+		function rotateToStart<T>(arr: T[], startIndex: number): T[] {
+			const rotated: T[] = [];
+			for (let i = 0; i < arr.length; i++) {
+				rotated.push(arr[(startIndex + i) % arr.length]);
+			}
+			return rotated;
+		}
+		function rotateBackToMonday<T>(arr: T[], startIndex: number): T[] {
+			const original: T[] = [];
+			for (let i = 0; i < arr.length; i++) {
+				// Reverse of rotateToStart: element at i in Monday-order corresponds to
+				// index (i - startIndex + 7) % 7 in rotated array
+				const srcIndex = (i - startIndex + arr.length) % arr.length;
+				original.push(arr[srcIndex]);
+			}
+			return original;
+		}
+		
+		function ensureNoAdjDuplicatesDisplayOrder(weekIn: WeekMenu, preferences: Preferences, startIndex: number): WeekMenu {
+			const rotated = rotateToStart(weekIn, startIndex);
+			for (let d = 0; d < rotated.length; d++) {
+				if (d === 0) continue;
+				const prev = rotated[d - 1];
+				const cur = rotated[d];
+				// Breakfast
+				if (cur.breakfast === prev.breakfast) {
+					cur.breakfast = pickDifferentFromList(preferences.breakfast, [prev.breakfast], cur.breakfast);
+				}
+				// Lunch dal and veg
+				if (cur.lunch[0] === prev.lunch[0]) {
+					cur.lunch[0] = pickDifferentFromList(preferences.dal, [prev.lunch[0]], cur.lunch[0]);
+				}
+				if (cur.lunch[1] === prev.lunch[1]) {
+					cur.lunch[1] = pickDifferentFromList(preferences.veg, [prev.lunch[1]], cur.lunch[1]);
+				}
+				// Dinner dal and veg
+				if (cur.dinner[0] === prev.dinner[0]) {
+					cur.dinner[0] = pickDifferentFromList(preferences.dal, [prev.dinner[0]], cur.dinner[0]);
+				}
+				if (cur.dinner[1] === prev.dinner[1]) {
+					cur.dinner[1] = pickDifferentFromList(preferences.veg, [prev.dinner[1]], cur.dinner[1]);
+				}
+				// Keep lunch vs dinner different within the same day
+				if (cur.dinner[0] === cur.lunch[0]) {
+					cur.dinner[0] = pickDifferentFromList(preferences.dal, [cur.lunch[0]], cur.dinner[0]);
+				}
+				if (cur.dinner[1] === cur.lunch[1]) {
+					cur.dinner[1] = pickDifferentFromList(preferences.veg, [cur.lunch[1]], cur.dinner[1]);
+				}
+			}
+			return rotateBackToMonday(rotated, startIndex);
+		}
+		
+		newWeek = ensureNoAdjDuplicatesDisplayOrder(newWeek, prefs, todayIndex);
 		console.log('Menu Store - Generated week:', newWeek);
 		set({ week: newWeek });
 		
