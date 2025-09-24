@@ -57,15 +57,15 @@ function formatNextDayMessage(): { title: string; body: string } {
 	const weekday = tomorrow.getDay() === 0 ? 6 : tomorrow.getDay() - 1;
 	const meal = week[weekday];
 
-	if (!meal) {
+    if (!meal) {
 		return {
-			title: 'Plan tomorrow\'s meals',
-			body: 'Set preferences and generate your menu to get reminders.'
+            title: 'Set your preferences',
+            body: 'You haven\'t generated a menu yet. Pick your favorites and create your 7-day menu.'
 		};
 	}
 
-	const title = 'Check out your next meals';
-	const body = `Tomorrow: Breakfast - ${meal.breakfast}; Lunch - ${meal.lunch.join(', ')}; Dinner - ${meal.dinner.join(', ')}`;
+    const title = 'Check out your next meals';
+    const body = `Tomorrow:\nBreakfast - ${meal.breakfast}\nLunch - ${meal.lunch.join(', ')}\nDinner - ${meal.dinner.join(', ')}`;
 	return { title, body };
 }
 
@@ -125,19 +125,20 @@ async function scheduleNativeDaily(getPermission: () => NotificationPermission |
         await LocalNotifications.cancel({ notifications: [{ id: 8001 }] });
     } catch {}
 
-    // Compute next trigger time at 20:00 and set repeating
+    // Compute next trigger time and message content for tomorrow
     const at = getNextTriggerDate(scheduleTime);
+    const { title, body } = formatNextDayMessage();
 
-    // Schedule with generic content - actual content will be generated when notification fires
+    // Schedule a single notification with specific content (we'll chain next day on delivery/tap)
     await LocalNotifications.schedule({
         notifications: [
             {
                 id: 8001,
-                title: 'Meal Planner Reminder',
-                body: 'Check your tomorrow\'s meals',
-                schedule: { at, repeats: true, every: 'day' },
-                smallIcon: 'ic_stat_icon', // monochrome small icon for status bar
-                largeIcon: 'ic_launcher', // colored launcher icon in expanded view
+                title,
+                body,
+                schedule: { at, repeats: false },
+                smallIcon: 'ic_stat_icon',
+                largeIcon: 'ic_launcher',
                 channelId: 'meal_planner_daily',
             },
         ],
@@ -238,6 +239,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                             const updated = [entry, ...get().notifications].slice(0, 50);
                             set({ notifications: updated, listenersAdded: true });
                             saveStored(updated);
+                            // Schedule next day's notification immediately
+                            try { await scheduleNativeDaily(() => get().permission, get().scheduleTime); } catch {}
                             try {
                                 const w = window as unknown as { history?: History; location?: Location };
                                 if (w.history && typeof w.history.pushState === 'function') {
@@ -263,6 +266,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                             const updated = [entry, ...get().notifications].slice(0, 50);
                             set({ notifications: updated, listenersAdded: true });
                             saveStored(updated);
+                            // Chain next day's schedule as well
+                            try { await scheduleNativeDaily(() => get().permission, get().scheduleTime); } catch {}
                         });
                     }
                 } catch (e) {

@@ -34,10 +34,10 @@ export function Notifications() {
 					items.map(n => (
 						<div key={n.id} className="card">
 							<div className="flex items-start justify-between gap-3">
-								<div>
-									<h3 className="font-semibold text-slate-800">{n.title}</h3>
-									<p className="text-slate-600 text-sm mt-1">{n.body}</p>
-								</div>
+                                <div>
+                                    <h3 className="font-semibold text-slate-800">{n.title}</h3>
+                                    <p className="text-slate-600 text-sm mt-1 whitespace-pre-line">{n.body}</p>
+                                </div>
 								<span className="text-xs text-slate-400">{new Date(n.createdAt).toLocaleString()}</span>
 							</div>
 						</div>
