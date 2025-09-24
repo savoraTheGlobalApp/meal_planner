@@ -36,7 +36,8 @@ export const signUp = async (email: string, password: string, name: string) => {
         veg: [],
         salad: []
       },
-      menu: []
+      menu: [],
+      notificationTime: '20:00'
     });
     
     return { user, error: null };
@@ -79,6 +80,17 @@ export const getUserData = async (userId: string) => {
     }
   } catch (error: any) {
     return { data: null, error: error.message };
+  }
+};
+
+export const updateUserNotificationTime = async (userId: string, time: string) => {
+  try {
+    await updateDoc(doc(db, 'users', userId), {
+      notificationTime: time
+    });
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
   }
 };
 

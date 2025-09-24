@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { useMenuStore } from './menu';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { useAuthStore } from './auth';
+import { getUserData, updateUserNotificationTime } from '../services/firebaseService';
 
 export type AppNotification = {
 	id: string;
@@ -16,6 +18,8 @@ type NotificationState = {
 	permission: NotificationPermission | 'unsupported';
 	initialised: boolean;
     listenersAdded?: boolean;
+    scheduleTime: string; // HH:MM 24h
+    setScheduleTime: (time: string) => Promise<void>;
 	init: () => void;
 	markAllRead: () => void;
 	getLast7Days: () => AppNotification[];
@@ -23,8 +27,8 @@ type NotificationState = {
 
 const STORAGE_KEY = 'meal_planner_notifications';
 const LAST_SCHEDULED_KEY = 'meal_planner_notifications_last_schedule';
-// Single source of truth for daily reminder time (24h HH:MM). Change here only.
-export const SCHEDULE_TIME: string = '20:00';
+const NOTIF_TIME_KEY = 'meal_planner_notification_time';
+const DEFAULT_TIME = '20:00';
 
 function loadStored(): AppNotification[] {
 	try {
@@ -53,15 +57,15 @@ function formatNextDayMessage(): { title: string; body: string } {
 	const weekday = tomorrow.getDay() === 0 ? 6 : tomorrow.getDay() - 1;
 	const meal = week[weekday];
 
-	if (!meal) {
+    if (!meal) {
 		return {
-			title: 'Plan tomorrow\'s meals',
-			body: 'Set preferences and generate your menu to get reminders.'
+            title: 'Set your preferences',
+            body: 'You haven\'t generated a menu yet. Pick your favorites and create your 7-day menu.'
 		};
 	}
 
-	const title = 'Check out your next meals';
-	const body = `Tomorrow: Breakfast - ${meal.breakfast}; Lunch - ${meal.lunch.join(', ')}; Dinner - ${meal.dinner.join(', ')}`;
+    const title = 'Check out your next meals';
+    const body = `Tomorrow:\nBreakfast - ${meal.breakfast}\nLunch - ${meal.lunch.join(', ')}\nDinner - ${meal.dinner.join(', ')}`;
 	return { title, body };
 }
 
@@ -86,10 +90,10 @@ async function waitForMenuReady(timeoutMs = 1500): Promise<void> {
     });
 }
 
-function getNextTriggerDate(): Date {
+function getNextTriggerDate(scheduleTime: string): Date {
 	const now = new Date();
     const target = new Date();
-    const [hh, mm] = SCHEDULE_TIME.split(':').map(v => parseInt(v, 10));
+    const [hh, mm] = scheduleTime.split(':').map(v => parseInt(v, 10));
     target.setHours(!Number.isNaN(hh) ? hh : 20, !Number.isNaN(mm) ? mm : 0, 0, 0);
 	if (now.getTime() >= target.getTime()) {
 		// schedule for tomorrow 20:00
@@ -98,42 +102,43 @@ function getNextTriggerDate(): Date {
     return target;
 }
 
-function msUntilNextReminder(): number {
+function msUntilNextReminder(scheduleTime: string): number {
     const now = new Date();
-    const target = getNextTriggerDate();
+    const target = getNextTriggerDate(scheduleTime);
     return target.getTime() - now.getTime();
 }
 
 // no test override logic; single constant SCHEDULE_TIME controls scheduling
 
-function scheduleTimer(send: () => void) {
-    const delay = msUntilNextReminder();
+function scheduleTimer(scheduleTime: string, send: () => void) {
+    const delay = msUntilNextReminder(scheduleTime);
 	window.setTimeout(() => {
 		send();
 		// chain next run roughly 24h later; use setTimeout again for clock changes
-		scheduleTimer(send);
+		scheduleTimer(scheduleTime, send);
 	}, delay);
 }
 
-async function scheduleNativeDaily(getPermission: () => NotificationPermission | 'unsupported') {
+async function scheduleNativeDaily(getPermission: () => NotificationPermission | 'unsupported', scheduleTime: string) {
     // Cancel any previous schedule with our ID to avoid duplicates
     try {
         await LocalNotifications.cancel({ notifications: [{ id: 8001 }] });
     } catch {}
 
-    // Compute next trigger time at 20:00 and set repeating
-    const at = getNextTriggerDate();
+    // Compute next trigger time and message content for tomorrow
+    const at = getNextTriggerDate(scheduleTime);
+    const { title, body } = formatNextDayMessage();
 
-    // Schedule with generic content - actual content will be generated when notification fires
+    // Schedule a single notification with specific content (we'll chain next day on delivery/tap)
     await LocalNotifications.schedule({
         notifications: [
             {
                 id: 8001,
-                title: 'Meal Planner Reminder',
-                body: 'Check your tomorrow\'s meals',
-                schedule: { at, repeats: true, every: 'day' },
-                smallIcon: 'ic_stat_icon', // monochrome small icon for status bar
-                largeIcon: 'ic_launcher', // colored launcher icon in expanded view
+                title,
+                body,
+                schedule: { at, repeats: false },
+                smallIcon: 'ic_stat_icon',
+                largeIcon: 'ic_launcher',
                 channelId: 'meal_planner_daily',
             },
         ],
@@ -145,6 +150,43 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 	permission: typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported',
     initialised: false,
     listenersAdded: false,
+    scheduleTime: (() => {
+        try { return localStorage.getItem(NOTIF_TIME_KEY) || DEFAULT_TIME; } catch { return DEFAULT_TIME; }
+    })(),
+    setScheduleTime: async (time: string) => {
+        const clean = /^\d{2}:\d{2}$/.test(time) ? time : DEFAULT_TIME;
+        try { localStorage.setItem(NOTIF_TIME_KEY, clean); } catch {}
+        set({ scheduleTime: clean });
+        // Persist to Firestore if logged in
+        try {
+            const { user } = useAuthStore.getState();
+            if (user) { await updateUserNotificationTime(user.id, clean as unknown as string); }
+        } catch {}
+        // Re-schedule
+        const isNative = Capacitor.isNativePlatform();
+        if (isNative) {
+            try { await scheduleNativeDaily(() => get().permission, clean); } catch {}
+        }
+        // Web timer: schedule a new timer (does not cancel previous but safe enough)
+        try {
+            scheduleTimer(clean, () => {
+                const { title, body } = formatNextDayMessage();
+                if (get().permission === 'granted') {
+                    try { new Notification(title, { body }); } catch {}
+                }
+                const entry: AppNotification = {
+                    id: `${Date.now()}`,
+                    title,
+                    body,
+                    createdAt: Date.now(),
+                    read: false,
+                };
+                const updated = [entry, ...get().notifications].slice(0, 50);
+                set({ notifications: updated });
+                saveStored(updated);
+            });
+        } catch {}
+    },
 
 	init: () => {
 		if (get().initialised) return;
@@ -179,7 +221,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                         });
                     } catch {}
 
-                    await scheduleNativeDaily(() => get().permission);
+                    await scheduleNativeDaily(() => get().permission, get().scheduleTime);
 
                     // Add listeners once
                     if (!get().listenersAdded) {
@@ -197,6 +239,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                             const updated = [entry, ...get().notifications].slice(0, 50);
                             set({ notifications: updated, listenersAdded: true });
                             saveStored(updated);
+                            // Schedule next day's notification immediately
+                            try { await scheduleNativeDaily(() => get().permission, get().scheduleTime); } catch {}
                             try {
                                 const w = window as unknown as { history?: History; location?: Location };
                                 if (w.history && typeof w.history.pushState === 'function') {
@@ -222,6 +266,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                             const updated = [entry, ...get().notifications].slice(0, 50);
                             set({ notifications: updated, listenersAdded: true });
                             saveStored(updated);
+                            // Chain next day's schedule as well
+                            try { await scheduleNativeDaily(() => get().permission, get().scheduleTime); } catch {}
                         });
                     }
                 } catch (e) {
@@ -243,7 +289,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 const todayKey = new Date().toDateString();
                 if (last !== todayKey) {
                     localStorage.setItem(LAST_SCHEDULED_KEY, todayKey);
-                    scheduleTimer(() => {
+                    scheduleTimer(get().scheduleTime, () => {
                         const { title, body } = formatNextDayMessage();
                         if (get().permission === 'granted') {
                             try { new Notification(title, { body }); } catch {}
@@ -262,6 +308,21 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 }
             } catch {}
         }
+
+        // On initialise, load notification time from Firestore if available
+        (async () => {
+            try {
+                const { user } = useAuthStore.getState();
+                if (user) {
+                    const { data } = await getUserData(user.id);
+                    const cloudTime = data?.notificationTime as string | undefined;
+                    if (cloudTime && /^\d{2}:\d{2}$/.test(cloudTime) && cloudTime !== get().scheduleTime) {
+                        try { localStorage.setItem(NOTIF_TIME_KEY, cloudTime); } catch {}
+                        set({ scheduleTime: cloudTime });
+                    }
+                }
+            } catch {}
+        })();
 
         set({ initialised: true });
 	},
