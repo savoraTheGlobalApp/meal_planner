@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, User, Heart, LogOut, Bell } from 'lucide-react';
+import { Home as HomeIcon, User, Heart, LogOut, Bell, Menu } from 'lucide-react';
 import { useNotificationStore } from '@/store/notifications';
 import appLogo from '/logo.png';
 import { useAuthStore } from '../store/auth';
@@ -44,42 +44,63 @@ export function AppShell() {
 		);
 	}
 
-	// Redirect to onboarding if not authenticated
-	if (!user) {
-		console.log('AppShell: No user, redirecting to onboarding');
-		navigate('/');
-		return null;
-	}
-
 	const handleLogout = async () => {
 		await logout();
 		navigate('/');
 	};
 
     const isNotifications = location.pathname.startsWith('/notifications');
+    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 	return (
 		<div className="min-h-screen flex flex-col">
+            {profileMenuOpen && (
+                <div className="fixed inset-0 z-40" onClick={()=>setProfileMenuOpen(false)}></div>
+            )}
             {!isNotifications && (
-			<header className={`glass sticky top-0 z-50 transition-transform duration-300 ${
+			<header 
+                className={`glass sticky top-0 z-50 transition-transform duration-300 ${
 				isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-			}`}>
+			}`}
+                onClick={() => profileMenuOpen && setProfileMenuOpen(false)}
+            >
 				<div className="container h-14 flex items-center justify-between">
                         <Link to="/home" className="flex items-center gap-2 text-lg font-semibold bg-gradient-to-r from-sky-600 to-fuchsia-600 bg-clip-text text-transparent">
                             <img src={appLogo} alt="Meal Planner" className="w-6 h-6 rounded" /> Meal Planner
 					</Link>
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => navigate('/notifications')}
-                                className="relative pill text-slate-600 hover:ring-1 hover:ring-slate-300 hidden md:inline-flex"
-                                title="Notifications"
-                            >
-                                <Bell size={18} />
-                                {unread > 0 && (
-                                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] leading-4 text-center">
-                                        {unread > 99 ? '99+' : unread}
-                                    </span>
-                                )}
-                            </button>
+                            {location.pathname.startsWith('/profile') ? (
+                                <div className="relative">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(v=>!v); }}
+                                        className="pill text-slate-600 hover:ring-1 hover:ring-slate-300 inline-flex"
+                                        title="Menu"
+                                    >
+                                        <Menu size={18} />
+                                    </button>
+                                    {profileMenuOpen && (
+                                        <>
+                                            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50" onClick={(e)=> e.stopPropagation()}>
+                                                <button className="w-full text-left px-4 py-2 hover:bg-slate-50" onClick={() => { setProfileMenuOpen(false); navigate('/profile?modal=notification'); }}>Notification</button>
+                                                <button className="w-full text-left px-4 py-2 hover:bg-slate-50" onClick={() => { setProfileMenuOpen(false); navigate('/profile?modal=edit'); }}>Edit Profile</button>
+                                                <button className="w-full text-left px-4 py-2 hover:bg-slate-50" onClick={() => { setProfileMenuOpen(false); navigate('/profile?modal=logout'); }}>Log out</button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => navigate('/notifications')}
+                                    className="relative pill text-slate-600 hover:ring-1 hover:ring-slate-300 hidden md:inline-flex"
+                                    title="Notifications"
+                                >
+                                    <Bell size={18} />
+                                    {unread > 0 && (
+                                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] leading-4 text-center">
+                                            {unread > 99 ? '99+' : unread}
+                                        </span>
+                                    )}
+                                </button>
+                            )}
 					<nav className="hidden md:flex items-center gap-2">
 						<NavLink to="/home" className={({isActive})=>`pill ${isActive? 'ring-1 ring-sky-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><HomeIcon size={18}/> Home</NavLink>
                             <NavLink to="/preferences" className={({isActive})=>`pill ${isActive? 'ring-1 ring-emerald-300 text-slate-900':'text-slate-600 hover:ring-1 hover:ring-slate-300'}`}><Heart size={18}/> Preferences</NavLink>

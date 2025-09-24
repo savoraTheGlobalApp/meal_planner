@@ -1,42 +1,45 @@
 import { useAuthStore } from '@/store/auth';
 import { useNotificationStore } from '@/store/notifications';
 import { useState } from 'react';
-import { Menu } from 'lucide-react';
 import { updateUserName } from '@/services/firebaseService';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 export function Profile() {
     const { user, logout } = useAuthStore();
     const { scheduleTime, setScheduleTime } = useNotificationStore();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [time, setTime] = useState(scheduleTime || '20:00');
-    const [menuOpen, setMenuOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [name, setName] = useState(user?.name || '');
     const [confirmLogout, setConfirmLogout] = useState(false);
+    const [params] = useSearchParams();
+    const navigate = useNavigate();
+
+    // Open modals based on query param provided by header hamburger
+    const modal = params.get('modal');
+    if (modal === 'notification' && !isSettingsOpen) {
+        setTimeout(() => {
+            setIsSettingsOpen(true);
+            navigate('/profile', { replace: true });
+        }, 0);
+    }
+    if (modal === 'edit' && !editOpen) {
+        setTimeout(() => {
+            setEditOpen(true);
+            navigate('/profile', { replace: true });
+        }, 0);
+    }
+    if (modal === 'logout' && !confirmLogout) {
+        setTimeout(() => {
+            setConfirmLogout(true);
+            navigate('/profile', { replace: true });
+        }, 0);
+    }
 	if (!user) return null;
 	return (
 		<div className="max-w-xl">
             <div className="card space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Profile</h2>
-                    {/* Hamburger menu */}
-                    <div className="relative">
-                        <button className="btn btn-ghost" onClick={()=>setMenuOpen(v=>!v)} aria-label="Open menu">
-                            <Menu />
-                        </button>
-                        {menuOpen && (
-                            <>
-                                {/* click-outside backdrop */}
-                                <div className="fixed inset-0 z-10" onClick={()=>setMenuOpen(false)}></div>
-                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-20">
-                                <button className="w-full text-left px-4 py-2 hover:bg-slate-50" onClick={async()=>{ setMenuOpen(false); setIsSettingsOpen(true); }}>Notification</button>
-                                <button className="w-full text-left px-4 py-2 hover:bg-slate-50" onClick={()=>{ setMenuOpen(false); setEditOpen(true); }}>Edit Profile</button>
-                                <button className="w-full text-left px-4 py-2 hover:bg-slate-50" onClick={()=>{ setMenuOpen(false); setConfirmLogout(true); }}>Log out</button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
+                <h2 className="text-xl font-semibold">Profile</h2>
 				<div>
 					<div className="text-slate-300">Name</div>
 					<div className="font-medium">{user.name}</div>
