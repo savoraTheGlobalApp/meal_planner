@@ -129,13 +129,29 @@ class MealGenerator {
 		if (!dinnerVegRandom) this.dinnerVegIndex++;
 
 		// Ensure lunch and dinner don't have the same dal or veg
-		const finalDinnerDal = dinnerDal === lunchDal ? 
-			this.selectItem((this as any).dinnerDalArray, this.dinnerDalIndex + 1, true) : 
-			dinnerDal;
+		let finalDinnerDal = dinnerDal;
+		if (dinnerDal === lunchDal) {
+			// Try to find a different dal for dinner
+			const availableDals = (this as any).dinnerDalArray.filter((dal: string) => dal !== lunchDal);
+			if (availableDals.length > 0) {
+				finalDinnerDal = availableDals[Math.floor(Math.random() * availableDals.length)];
+			} else {
+				// Fallback: use next item in dinner array
+				finalDinnerDal = this.selectItem((this as any).dinnerDalArray, this.dinnerDalIndex + 1, true);
+			}
+		}
 		
-		const finalDinnerVeg = dinnerVeg === lunchVeg ? 
-			this.selectItem((this as any).dinnerVegArray, this.dinnerVegIndex + 1, true) : 
-			dinnerVeg;
+		let finalDinnerVeg = dinnerVeg;
+		if (dinnerVeg === lunchVeg) {
+			// Try to find a different veg for dinner
+			const availableVegs = (this as any).dinnerVegArray.filter((veg: string) => veg !== lunchVeg);
+			if (availableVegs.length > 0) {
+				finalDinnerVeg = availableVegs[Math.floor(Math.random() * availableVegs.length)];
+			} else {
+				// Fallback: use next item in dinner array
+				finalDinnerVeg = this.selectItem((this as any).dinnerVegArray, this.dinnerVegIndex + 1, true);
+			}
+		}
 
 		const meal = {
 			breakfast,
