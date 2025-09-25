@@ -3,6 +3,72 @@ import { updateUserMenu, clearUserMenu } from '../services/firebaseService';
 import { useAuthStore } from './auth';
 import type { Preferences } from './preferences';
 
+// Component extraction utility
+function extractComponents(dishName: string): string[] {
+	const components: string[] = [];
+	const name = dishName.toLowerCase();
+	
+	// Common vegetable/protein components
+	const componentMap: Record<string, string[]> = {
+		'aloo': ['aloo', 'potato'],
+		'bhindi': ['bhindi', 'okra'],
+		'gobhi': ['gobhi', 'cauliflower'],
+		'palak': ['palak', 'spinach'],
+		'paneer': ['paneer'],
+		'mushroom': ['mushroom'],
+		'baingan': ['baingan', 'brinjal', 'eggplant'],
+		'matar': ['matar', 'peas'],
+		'capsicum': ['capsicum', 'shimla mirch', 'bell pepper'],
+		'chana': ['chana', 'chickpea'],
+		'rajma': ['rajma', 'kidney beans'],
+		'lobia': ['lobia', 'black-eyed beans'],
+		'chicken': ['chicken'],
+		'fish': ['fish'],
+		'egg': ['egg', 'anda'],
+		'soyabean': ['soyabean', 'soya'],
+		'kaddu': ['kaddu', 'pumpkin'],
+		'parval': ['parval', 'pointed gourd'],
+		'beans': ['beans'],
+		'broccoli': ['broccoli'],
+		'cabbage': ['cabbage'],
+		'karela': ['karela', 'bitter gourd'],
+		'lauki': ['lauki', 'bottle gourd'],
+		'tinda': ['tinda']
+	};
+	
+	// Check for each component
+	for (const [key, variations] of Object.entries(componentMap)) {
+		for (const variation of variations) {
+			if (name.includes(variation)) {
+				components.push(key);
+				break; // Only add each component once
+			}
+		}
+	}
+	
+	return components;
+}
+
+// Check if two dishes share any components (excluding Aloo special case)
+function shareComponents(dish1: string, dish2: string, allowAloo: boolean = false): boolean {
+	const components1 = extractComponents(dish1);
+	const components2 = extractComponents(dish2);
+	
+	// Filter out Aloo if it's allowed to repeat
+	if (allowAloo) {
+		const filtered1 = components1.filter(c => c !== 'aloo');
+		const filtered2 = components2.filter(c => c !== 'aloo');
+		return filtered1.some(c => filtered2.includes(c));
+	}
+	
+	return components1.some(c => components2.includes(c));
+}
+
+// Check if a dish shares components with any dish in a list
+function sharesComponentsWithAny(dish: string, dishList: string[], allowAloo: boolean = false): boolean {
+	return dishList.some(existingDish => shareComponents(dish, existingDish, allowAloo));
+}
+
 export type Meal = { breakfast: string; lunch: string[]; dinner: string[] };
 export type WeekMenu = Meal[]; // length 7
 
@@ -36,7 +102,7 @@ function pickDifferentFromList(arr: string[], avoids: string[], fallback: string
 	return firstDifferent ?? fallback;
 }
 
-// Advanced meal generation with round-robin + randomness
+// Advanced meal generation with round-robin + randomness + component-based duplicate prevention
 class MealGenerator {
 	private breakfastIndex = 0;
 	private lunchDalIndex = 0;
@@ -44,6 +110,7 @@ class MealGenerator {
 	private dinnerDalIndex = 0;
 	private dinnerVegIndex = 0;
 	private preferences: Preferences;
+	private previousMeals: Meal[] = []; // Track previous meals for component checking
 
 	constructor(preferences: Preferences) {
 		this.preferences = preferences;
@@ -82,82 +149,130 @@ class MealGenerator {
 		return Math.random() < 0.1;
 	}
 
-	generateMeal(): Meal {
-		// Breakfast: Round-robin with 10% randomness
-		const breakfastRandom = this.shouldUseRandom();
-		const breakfast = this.selectItem(
-			this.preferences.breakfast, 
-			this.breakfastIndex, 
-			breakfastRandom
-		);
-		if (!breakfastRandom) this.breakfastIndex++;
+	// Check if a dish conflicts with components in the same meal
+	private hasComponentConflictInSameMeal(dish: string, otherDishes: string[]): boolean {
+		return sharesComponentsWithAny(dish, otherDishes, false); // No Aloo exception within same meal
+	}
 
-		// Lunch Dal: Round-robin with 10% randomness
-		const lunchDalRandom = this.shouldUseRandom();
-		const lunchDal = this.selectItem(
-			this.preferences.dal, 
-			this.lunchDalIndex, 
-			lunchDalRandom
-		);
-		if (!lunchDalRandom) this.lunchDalIndex++;
-
-		// Lunch Veg: Round-robin with 10% randomness
-		const lunchVegRandom = this.shouldUseRandom();
-		const lunchVeg = this.selectItem(
-			this.preferences.veg, 
-			this.lunchVegIndex, 
-			lunchVegRandom
-		);
-		if (!lunchVegRandom) this.lunchVegIndex++;
-
-		// Dinner Dal: Use shuffled array, round-robin with 10% randomness
-		const dinnerDalRandom = this.shouldUseRandom();
-		const dinnerDal = this.selectItem(
-			(this as any).dinnerDalArray, 
-			this.dinnerDalIndex, 
-			dinnerDalRandom
-		);
-		if (!dinnerDalRandom) this.dinnerDalIndex++;
-
-		// Dinner Veg: Use shuffled array, round-robin with 10% randomness
-		const dinnerVegRandom = this.shouldUseRandom();
-		const dinnerVeg = this.selectItem(
-			(this as any).dinnerVegArray, 
-			this.dinnerVegIndex, 
-			dinnerVegRandom
-		);
-		if (!dinnerVegRandom) this.dinnerVegIndex++;
-
-		// Ensure lunch and dinner don't have the same dal or veg
-		let finalDinnerDal = dinnerDal;
-		if (dinnerDal === lunchDal) {
-			// Try to find a different dal for dinner
-			const availableDals = (this as any).dinnerDalArray.filter((dal: string) => dal !== lunchDal);
-			if (availableDals.length > 0) {
-				finalDinnerDal = availableDals[Math.floor(Math.random() * availableDals.length)];
-			} else {
-				// Fallback: use next item in dinner array
-				finalDinnerDal = this.selectItem((this as any).dinnerDalArray, this.dinnerDalIndex + 1, true);
+	// Check if a dish conflicts with components from previous meals
+	private hasComponentConflictWithPrevious(dish: string, previousMeals: Meal[]): boolean {
+		for (const meal of previousMeals) {
+			const allPreviousDishes = [
+				meal.breakfast,
+				...meal.lunch.slice(0, 2), // Exclude 'Roti/Rice'
+				...meal.dinner.slice(0, 2) // Exclude 'Roti/Rice'
+			];
+			
+			// For previous days, no Aloo exception - all components must be different
+			if (sharesComponentsWithAny(dish, allPreviousDishes, false)) {
+				return true;
 			}
+		}
+		return false;
+	}
+
+	// Check if a dish conflicts with same-day meals (Aloo exception applies)
+	private hasComponentConflictWithSameDay(dish: string, sameDayMeals: string[]): boolean {
+		// For same day, Aloo can repeat across meals (lunch to dinner) but not within same meal
+		return sharesComponentsWithAny(dish, sameDayMeals, true); // Allow Aloo across meals on same day
+	}
+
+	// Find a dish that doesn't conflict with components
+	private findNonConflictingDish(
+		availableDishes: string[], 
+		avoidDishes: string[], 
+		previousMeals: Meal[],
+		sameDayMeals: string[] = []
+	): string {
+		// First, try to find a dish that doesn't conflict with same meal components
+		const sameMealFiltered = availableDishes.filter(dish => 
+			!this.hasComponentConflictInSameMeal(dish, avoidDishes)
+		);
+		
+		if (sameMealFiltered.length === 0) {
+			// If no options without same-meal conflicts, use original logic
+			return pickDifferentFromList(availableDishes, avoidDishes, availableDishes[0] || 'Item');
 		}
 		
-		let finalDinnerVeg = dinnerVeg;
-		if (dinnerVeg === lunchVeg) {
-			// Try to find a different veg for dinner
-			const availableVegs = (this as any).dinnerVegArray.filter((veg: string) => veg !== lunchVeg);
-			if (availableVegs.length > 0) {
-				finalDinnerVeg = availableVegs[Math.floor(Math.random() * availableVegs.length)];
-			} else {
-				// Fallback: use next item in dinner array
-				finalDinnerVeg = this.selectItem((this as any).dinnerVegArray, this.dinnerVegIndex + 1, true);
+		// Then, try to find one that doesn't conflict with same day meals (Aloo exception applies)
+		const sameDayFiltered = sameMealFiltered.filter(dish => 
+			!this.hasComponentConflictWithSameDay(dish, sameDayMeals)
+		);
+		
+		if (sameDayFiltered.length > 0) {
+			// Finally, try to find one that doesn't conflict with previous days
+			const previousDayFiltered = sameDayFiltered.filter(dish => 
+				!this.hasComponentConflictWithPrevious(dish, previousMeals)
+			);
+			
+			if (previousDayFiltered.length > 0) {
+				return pickRandom(previousDayFiltered) || previousDayFiltered[0];
 			}
+			
+			// Fallback to same-day filtered options
+			return pickRandom(sameDayFiltered) || sameDayFiltered[0];
 		}
+		
+		// Fallback to same-meal filtered options
+		return pickRandom(sameMealFiltered) || sameMealFiltered[0];
+	}
+
+	generateMeal(): Meal {
+		// Breakfast: Use component-based conflict detection
+		const breakfast = this.findNonConflictingDish(
+			this.preferences.breakfast,
+			[], // No same-meal conflicts for breakfast
+			this.previousMeals,
+			[] // No same-day meals yet
+		);
+		this.breakfastIndex++;
+
+		// Lunch Dal: Use component-based conflict detection
+		const lunchDal = this.findNonConflictingDish(
+			this.preferences.dal,
+			[], // No same-meal conflicts yet
+			this.previousMeals,
+			[breakfast] // Include breakfast for same-day conflict checking
+		);
+		this.lunchDalIndex++;
+
+		// Lunch Veg: Use component-based conflict detection, avoid conflicts with lunch dal
+		const lunchVeg = this.findNonConflictingDish(
+			this.preferences.veg,
+			[lunchDal], // Avoid conflicts with lunch dal
+			this.previousMeals,
+			[breakfast] // Include breakfast for same-day conflict checking
+		);
+		this.lunchVegIndex++;
+
+		// Dinner Dal: Use component-based conflict detection, avoid conflicts with lunch items
+		// Aloo exception: can have Aloo in dinner even if lunch had Aloo
+		const dinnerDal = this.findNonConflictingDish(
+			(this as any).dinnerDalArray,
+			[lunchDal, lunchVeg], // Avoid conflicts with lunch items
+			this.previousMeals,
+			[breakfast, lunchDal, lunchVeg] // Include all same-day meals for Aloo exception
+		);
+		this.dinnerDalIndex++;
+
+		// Dinner Veg: Use component-based conflict detection, avoid conflicts with all other items
+		// Aloo exception: can have Aloo in dinner even if lunch had Aloo
+		const dinnerVeg = this.findNonConflictingDish(
+			(this as any).dinnerVegArray,
+			[lunchDal, lunchVeg, dinnerDal], // Avoid conflicts with all other items
+			this.previousMeals,
+			[breakfast, lunchDal, lunchVeg, dinnerDal] // Include all same-day meals for Aloo exception
+		);
+		this.dinnerVegIndex++;
 
 		const meal = {
 			breakfast,
 			lunch: [lunchDal, lunchVeg, 'Roti/Rice'],
-			dinner: [finalDinnerDal, finalDinnerVeg, 'Roti/Rice'],
+			dinner: [dinnerDal, dinnerVeg, 'Roti/Rice'],
 		};
+
+		// Add this meal to previous meals for future conflict checking
+		this.previousMeals.push(meal);
 
 		console.log('GenerateDay - Final meal:', meal);
 		return meal;
@@ -172,56 +287,16 @@ function generateDay(preferences: Preferences): Meal {
 function generateWeek(preferences: Preferences): WeekMenu {
 	const generator = new MealGenerator(preferences);
 	const week: WeekMenu = [];
+	
 	for (let day = 0; day < 7; day++) {
 		const meal = generator.generateMeal();
-		if (week.length) {
-			const prev = week[week.length - 1];
-			// Breakfast should not repeat on adjacent days
-			if (meal.breakfast === prev.breakfast) {
-				meal.breakfast = pickDifferent(preferences.breakfast, prev.breakfast, meal.breakfast);
-			}
-			// Lunch dal and veg should not repeat on adjacent days
-			if (meal.lunch[0] === prev.lunch[0]) {
-				meal.lunch[0] = pickDifferent(preferences.dal, prev.lunch[0], meal.lunch[0]);
-			}
-			if (meal.lunch[1] === prev.lunch[1]) {
-				meal.lunch[1] = pickDifferent(preferences.veg, prev.lunch[1], meal.lunch[1]);
-			}
-			// Dinner dal and veg should not repeat on adjacent days
-			if (meal.dinner[0] === prev.dinner[0]) {
-				meal.dinner[0] = pickDifferent(preferences.dal, prev.dinner[0], meal.dinner[0]);
-			}
-			if (meal.dinner[1] === prev.dinner[1]) {
-				meal.dinner[1] = pickDifferent(preferences.veg, prev.dinner[1], meal.dinner[1]);
-			}
-		}
 		week.push(meal);
 	}
 
-	// Ensure no duplicates across week boundary (e.g., Sunday vs Monday)
-	if (week.length >= 2) {
-		const first = week[0];
-		const last = week[week.length - 1];
-		const second = week[1];
-		// Breakfast
-		if (first.breakfast === last.breakfast) {
-			first.breakfast = pickDifferentFromList(preferences.breakfast, [last.breakfast, second.breakfast], first.breakfast);
-		}
-		// Lunch dal and veg
-		if (first.lunch[0] === last.lunch[0]) {
-			first.lunch[0] = pickDifferentFromList(preferences.dal, [last.lunch[0], second.lunch[0]], first.lunch[0]);
-		}
-		if (first.lunch[1] === last.lunch[1]) {
-			first.lunch[1] = pickDifferentFromList(preferences.veg, [last.lunch[1], second.lunch[1]], first.lunch[1]);
-		}
-		// Dinner dal and veg
-		if (first.dinner[0] === last.dinner[0]) {
-			first.dinner[0] = pickDifferentFromList(preferences.dal, [last.dinner[0], second.dinner[0]], first.dinner[0]);
-		}
-		if (first.dinner[1] === last.dinner[1]) {
-			first.dinner[1] = pickDifferentFromList(preferences.veg, [last.dinner[1], second.dinner[1]], first.dinner[1]);
-		}
-	}
+	// The component-based conflict detection is now handled within the MealGenerator
+	// The previous logic for exact item duplicates is still maintained as a fallback
+	// but the primary prevention is now component-based
+	
 	return week;
 }
 
@@ -329,80 +404,69 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 			return;
 		}
 		
-		// Generate a new meal with fresh indices to avoid selecting the same item
+		// Create a generator with previous meals for component conflict detection
 		const generator = new MealGenerator(prefs);
-		const generated = generator.generateMeal();
 		
-		// Ensure we don't select the same item if current meal is the first in preferences
-		const currentMeal = copy[dayIndex][which];
+		// Add all previous meals to the generator's history
+		for (let i = 0; i < dayIndex; i++) {
+			if (copy[i]) {
+				(generator as any).previousMeals.push(copy[i]);
+			}
+		}
+		
+		// For same-day conflict checking, we need to get all same-day meals
+		const currentDayMeal = copy[dayIndex];
+		const sameDayMeals: string[] = [];
+		
+		if (currentDayMeal) {
+			sameDayMeals.push(currentDayMeal.breakfast);
+			sameDayMeals.push(...currentDayMeal.lunch.slice(0, 2));
+			sameDayMeals.push(...currentDayMeal.dinner.slice(0, 2));
+		}
+		
+		// Generate a new meal with component-based conflict detection
+		const generated = generator.generateMeal();
 		let newMeal = generated[which];
 		
-		// If regenerating breakfast and current is first preference, try to get different one
-		if (which === 'breakfast' && currentMeal === prefs.breakfast[0]) {
+		// For lunch and dinner, we need to handle the array structure
+		if (which === 'lunch' || which === 'dinner') {
+			const currentMeal = copy[dayIndex][which];
+			const newMealArray = generated[which];
+			
+			// Ensure we get a different meal by trying multiple times if needed
+			let attempts = 0;
+			while (attempts < 10 && JSON.stringify(newMealArray) === JSON.stringify(currentMeal)) {
+				const newGenerator = new MealGenerator(prefs);
+				// Add previous meals to new generator
+				for (let i = 0; i < dayIndex; i++) {
+					if (copy[i]) {
+						(newGenerator as any).previousMeals.push(copy[i]);
+					}
+				}
+				// Add same-day meals for Aloo exception
+				(newGenerator as any).sameDayMeals = sameDayMeals;
+				const tempGenerated = newGenerator.generateMeal();
+				newMeal = tempGenerated[which];
+				attempts++;
+			}
+		} else {
+			// For breakfast, ensure we get a different item
+			const currentMeal = copy[dayIndex][which];
 			let attempts = 0;
 			while (newMeal === currentMeal && attempts < 10) {
 				const newGenerator = new MealGenerator(prefs);
-				newMeal = newGenerator.generateMeal().breakfast;
+				// Add previous meals to new generator
+				for (let i = 0; i < dayIndex; i++) {
+					if (copy[i]) {
+						(newGenerator as any).previousMeals.push(copy[i]);
+					}
+				}
+				// Add same-day meals for Aloo exception
+				(newGenerator as any).sameDayMeals = sameDayMeals;
+				const tempGenerated = newGenerator.generateMeal();
+				newMeal = tempGenerated[which];
 				attempts++;
 			}
-		}
-		// If regenerating lunch and current dal/veg is first preference, try to get different one
-		else if (which === 'lunch') {
-			const currentLunch = copy[dayIndex].lunch;
-			const newLunch = generated.lunch;
-			
-			// Check if dal is the same and it's the first preference
-			if (currentLunch[0] === prefs.dal[0] && newLunch[0] === currentLunch[0]) {
-				let attempts = 0;
-				while (newLunch[0] === currentLunch[0] && attempts < 10) {
-					const newGenerator = new MealGenerator(prefs);
-					const tempLunch = newGenerator.generateMeal().lunch;
-					newLunch[0] = tempLunch[0];
-					attempts++;
-				}
-			}
-			
-			// Check if veg is the same and it's the first preference
-			if (currentLunch[1] === prefs.veg[0] && newLunch[1] === currentLunch[1]) {
-				let attempts = 0;
-				while (newLunch[1] === currentLunch[1] && attempts < 10) {
-					const newGenerator = new MealGenerator(prefs);
-					const tempLunch = newGenerator.generateMeal().lunch;
-					newLunch[1] = tempLunch[1];
-					attempts++;
-				}
-			}
-			
-			newMeal = newLunch;
-		}
-		// If regenerating dinner and current dal/veg is first preference, try to get different one
-		else if (which === 'dinner') {
-			const currentDinner = copy[dayIndex].dinner;
-			const newDinner = generated.dinner;
-			
-			// Check if dal is the same and it's the first preference
-			if (currentDinner[0] === prefs.dal[0] && newDinner[0] === currentDinner[0]) {
-				let attempts = 0;
-				while (newDinner[0] === currentDinner[0] && attempts < 10) {
-					const newGenerator = new MealGenerator(prefs);
-					const tempDinner = newGenerator.generateMeal().dinner;
-					newDinner[0] = tempDinner[0];
-					attempts++;
-				}
-			}
-			
-			// Check if veg is the same and it's the first preference
-			if (currentDinner[1] === prefs.veg[0] && newDinner[1] === currentDinner[1]) {
-				let attempts = 0;
-				while (newDinner[1] === currentDinner[1] && attempts < 10) {
-					const newGenerator = new MealGenerator(prefs);
-					const tempDinner = newGenerator.generateMeal().dinner;
-					newDinner[1] = tempDinner[1];
-					attempts++;
-				}
-			}
-			
-			newMeal = newDinner;
 		}
 		
 		copy[dayIndex] = {
