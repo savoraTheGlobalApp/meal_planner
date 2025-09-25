@@ -39,8 +39,8 @@ export function Home() {
 			{/* Punchline card below preferences */}
 			<div className="card mt-4 bg-gradient-to-br from-orange-100 to-red-100 border border-orange-200">
 				<div className="text-center py-4">
-					<h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye stress, hello Meals.</h3>
-					<p className="text-sm text-orange-600">Your meal planning journey starts here</p>
+					<h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye meal planning</h3>
+					<p className="text-sm text-orange-600">Start cooking!!</p>
 				</div>
 			</div>
 			</div>
@@ -78,8 +78,8 @@ export function Home() {
 				{/* Punchline card below menu */}
 				<div className="card mt-4 bg-gradient-to-br from-orange-100 to-red-100 border border-orange-200">
 					<div className="text-center py-4">
-						<h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye stress, hello Meals.</h3>
-						<p className="text-sm text-orange-600">Your meal planning journey starts here</p>
+						<h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye meal planning</h3>
+						<p className="text-sm text-orange-600">Start cooking!!</p>
 					</div>
 				</div>
 				</div>
