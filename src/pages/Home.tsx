@@ -20,6 +20,7 @@ export function Home() {
 		<div className="space-y-6">
 			{/* Show Preferences Card only if no menu has been generated */}
 			{!hasMenu && (
+				<div>
 				<div className="card bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
 				<div>
 					<h2 className="text-xl font-bold text-slate-800 mb-2">Set Your Preferences</h2>
@@ -35,10 +36,19 @@ export function Home() {
 					</Link>
 				</div>
 			</div>
+			{/* Punchline card below preferences */}
+			<div className="card mt-4 bg-gradient-to-br from-orange-100 to-red-100 border border-orange-200">
+				<div className="text-center py-4">
+					<h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye stress, hello Meals.</h3>
+					<p className="text-sm text-orange-600">Your meal planning journey starts here</p>
+				</div>
+			</div>
+			</div>
 			)}
 
 			{/* Show Menu Viewing Card only if menu has been generated */}
 			{hasMenu && (
+				<div>
 				<div className="card bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200">
 					<div>
 						<h2 className="text-xl font-bold text-slate-800 mb-2">View Your Menu</h2>
@@ -64,6 +74,14 @@ export function Home() {
 							</Link>
 						</div>
 					</div>
+				</div>
+				{/* Punchline card below menu */}
+				<div className="card mt-4 bg-gradient-to-br from-orange-100 to-red-100 border border-orange-200">
+					<div className="text-center py-4">
+						<h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye stress, hello Meals.</h3>
+						<p className="text-sm text-orange-600">Your meal planning journey starts here</p>
+					</div>
+				</div>
 				</div>
 			)}
 
