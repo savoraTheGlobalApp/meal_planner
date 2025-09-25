@@ -1,62 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, CheckCircle, Utensils } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wand2, ListChecks, CalendarDays, RefreshCcw, Download } from 'lucide-react';
 import appLogo from '/logo.png';
 
-const onboardingScreens = [
-  {
-    id: 1,
-    title: "Welcome to Your Personal Meal Planner",
-    subtitle: "Transform your eating habits with smart meal planning",
-    description: "Say goodbye to meal prep stress and hello to delicious, personalized nutrition plans tailored just for you.",
-    gradient: "from-yellow-400 via-orange-500 to-red-500",
-    bgPattern: "bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50",
-    features: [
-      "Personalized meal recommendations",
-      "Dietary preference tracking",
-      "7-day meal planning"
-    ]
-  },
-  {
-    id: 2,
-    title: "Set Your Food Preferences",
-    subtitle: "Tell us what you love to eat",
-    description: "Choose from a variety of breakfast options, dals, and vegetables. We'll create the perfect meal plan based on your preferences.",
-    gradient: "from-pink-400 via-rose-500 to-red-500",
-    bgPattern: "bg-gradient-to-br from-pink-50 via-rose-50 to-red-50",
-    features: [
-      "Breakfast favorites selection",
-      "Dal and curry preferences", 
-      "Vegetable choices"
-    ]
-  },
-  {
-    id: 3,
-    title: "Get Your Weekly Menu",
-    subtitle: "Personalized meal plans in seconds",
-    description: "Our smart system creates a complete 7-day meal plan with breakfast, lunch, and dinner options that match your taste.",
-    gradient: "from-blue-400 via-indigo-500 to-purple-500",
-    bgPattern: "bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50",
-    features: [
-      "Smart meal combinations",
-      "Weekly overview planning",
-      "Daily detailed breakdown"
-    ]
-  },
-  {
-    id: 4,
-    title: "Enjoy Delicious Meals",
-    subtitle: "From planning to plate",
-    description: "Download your meal plan as PDF, regenerate individual meals, and never run out of meal ideas again.",
-    gradient: "from-green-400 via-emerald-500 to-teal-500",
-    bgPattern: "bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50",
-    features: [
-      "PDF download functionality",
-      "Individual meal regeneration",
-      "Easy navigation between days"
-    ]
-  }
-];
+// We will render visual cards that mirror the Profile's "How it works" subcards
+const TOTAL_SCREENS = 4;
 
 export function Onboarding() {
   const [currentScreen, setCurrentScreen] = useState(0);
@@ -91,7 +39,7 @@ export function Onboarding() {
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe && currentScreen < onboardingScreens.length - 1) {
+    if (isLeftSwipe && currentScreen < TOTAL_SCREENS - 1) {
       nextScreen();
     }
     if (isRightSwipe && currentScreen > 0) {
@@ -102,7 +50,7 @@ export function Onboarding() {
   };
 
   const nextScreen = () => {
-    if (currentScreen < onboardingScreens.length - 1) {
+    if (currentScreen < TOTAL_SCREENS - 1) {
       setIsAnimating(true);
       setTimeout(() => {
         setCurrentScreen(currentScreen + 1);
@@ -129,8 +77,76 @@ export function Onboarding() {
     }, 150);
   };
 
-  const currentData = onboardingScreens[currentScreen];
-  const isLastScreen = currentScreen === onboardingScreens.length - 1;
+  const isLastScreen = currentScreen === TOTAL_SCREENS - 1;
+
+  const renderScreen = (index: number) => {
+    if (index === 0) {
+      return (
+        <div className="relative overflow-hidden text-center p-10 md:p-12 rounded-2xl shadow-xl border border-white/20 backdrop-blur-sm bg-gradient-to-br from-yellow-50 to-orange-50 min-h-[280px] md:min-h-[320px] flex items-center justify-center">
+          {/* Decorative ring */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-orange-200/40 blur-2xl"></div>
+          <div className="flex flex-col items-center text-center relative">
+            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-3 shadow-sm">
+              <img src={appLogo} alt="Meal Planner" className="w-10 h-10 rounded" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-slate-800 mb-2">Welcome</h1>
+            <p className="text-base text-slate-600 mb-4">Your personal meal planner</p>
+            {/* Visual chips */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-1">
+              <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-orange-700 border border-orange-200">Stress‑free planning</span>
+              <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-orange-700 border border-orange-200">Easy to use</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (index === 1) {
+      return (
+        <div className="relative overflow-hidden text-center p-10 md:p-12 rounded-2xl shadow-xl border border-white/20 backdrop-blur-sm bg-gradient-to-br from-rose-50 to-pink-50 min-h-[280px] md:min-h-[320px] flex items-center justify-center">
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-pink-200/40 blur-2xl"></div>
+          <div className="flex flex-col items-center text-center relative">
+            <div className="w-16 h-16 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mb-3 shadow-sm"><ListChecks size={28} /></div>
+            <h1 className="text-3xl font-extrabold text-slate-800 mb-2">Pick Favorites</h1>
+            <p className="text-base text-slate-600 mb-4">Breakfast • Dal • Veg</p>
+            <div className="flex flex-wrap justify-center gap-2 mt-1">
+              <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-rose-700 border border-rose-200">Choose from built‑in list</span>
+              <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-rose-700 border border-rose-200">Add your own items</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (index === 2) {
+      return (
+        <div className="relative overflow-hidden text-center p-10 md:p-12 rounded-2xl shadow-xl border border-white/20 backdrop-blur-sm bg-gradient-to-br from-indigo-50 to-purple-50 min-h-[280px] md:min-h-[320px] flex items-center justify-center">
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-indigo-200/30 blur-2xl"></div>
+          <div className="flex flex-col items-center text-center relative">
+            <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3 shadow-sm"><CalendarDays size={28} /></div>
+            <h1 className="text-3xl font-extrabold text-slate-800 mb-2">Next 7‑Day Menu</h1>
+            <p className="text-base text-slate-600 mb-4">Weekly & daily views</p>
+            <div className="flex flex-wrap justify-center gap-2 mt-1">
+              <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-indigo-700 border border-indigo-200">No consecutive repeats</span>
+              <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-indigo-700 border border-indigo-200">Daily reminders</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="relative overflow-hidden text-center p-12 md:p-14 rounded-2xl shadow-xl border border-white/20 backdrop-blur-sm bg-gradient-to-br from-emerald-50 to-teal-50 min-h-[320px] md:min-h-[380px] flex items-center justify-center">
+        <div className="absolute -bottom-10 right-0 w-44 h-44 rounded-full bg-emerald-200/40 blur-2xl"></div>
+        <div className="flex flex-col items-center text-center relative">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 shadow-sm"><RefreshCcw size={28} /></div>
+          <h1 className="text-3xl font-extrabold text-slate-800 mb-2">Use & Share</h1>
+          <p className="text-base text-slate-600 mb-4">Regenerate meals • <span className="inline-flex items-center gap-1"><Download size={14}/> PDF</span></p>
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-1">
+            <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-emerald-700 border border-emerald-200">Change anytime</span>
+            <span className="px-3.5 py-1.5 rounded-full text-sm bg-white/80 text-emerald-700 border border-emerald-200">Share easily</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={`min-h-screen flex flex-col transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
@@ -160,36 +176,13 @@ export function Onboarding() {
           onTouchEnd={onTouchEnd}
         >
           <div className={`w-full max-w-sm transition-all duration-500 ${isAnimating ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'} ${isSwipeActive ? 'cursor-grabbing' : 'cursor-grab'}`}>
-            {/* Content */}
-            <div className={`text-center space-y-4 ${currentData.bgPattern} p-6 rounded-2xl shadow-xl border border-white/20 backdrop-blur-sm`}>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-800 mb-2">
-                  {currentData.title}
-                </h1>
-                <h2 className="text-base font-semibold text-slate-600 mb-3">
-                  {currentData.subtitle}
-                </h2>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {currentData.description}
-                </p>
-              </div>
-
-              {/* Features */}
-              <div className="space-y-2">
-                {currentData.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                    <span className="text-xs font-medium">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderScreen(currentScreen)}
           </div>
         </div>
 
         {/* Dots */}
         <div className="flex justify-center gap-2 mb-2">
-          {onboardingScreens.map((_, index) => (
+          {[...Array(TOTAL_SCREENS)].map((_, index) => (
             <button
               key={index}
               onClick={() => goToScreen(index)}
