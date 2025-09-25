@@ -72,6 +72,10 @@ export function Profile() {
                             <span className="text-green-500 font-semibold">•</span>
                             <p>You can change your daily reminder time from the hamburger icon in the upper right corner.</p>
                         </div>
+						<div className="flex items-start gap-3">
+                            <span className="text-blue-500 font-semibold">•</span>
+                            <p>Use the New Menu button present in weekly view to get a new menu for the same preferences.</p>
+                        </div>
                         <div className="flex items-start gap-3">
                             <span className="text-purple-500 font-semibold">•</span>
                             <p>Use the regenerate button on individual meals to get different options for specific days.</p>
