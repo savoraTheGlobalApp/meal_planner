@@ -9,8 +9,8 @@ export type Preferences = Record<Category, string[]>;
 export const initialItems: Record<Category, string[]> = {
 	breakfast: ['Poha','Daliya','Upma','Aloo Paratha','Paneer Paratha','Gobhi Paratha','Masala Dosa','Idli Sambhar','Veg Sandwich','Cornflakes','Vermicelli','Chilla/Cheela','Chana','Moong Dal','Maggi','Pasta','Macroni','Bread Omlette','Bread Pakoda','Uttapam','Oats'],
 	dal: [
-		'Aloo (Potato)', 'Aloo Baingan','Aloo Capsicum (Shimla Mirch)','Aloo Matar','Aloo Mushroom',
-		'Aloo Palak', 'Aloo Parval', 'Aloo Soyabean','Bhindi (Okra) Masala (Gravy)',
+		'Aloo (Potato)', 'Aloo Baingan', 'Aloo Bhindi', 'Aloo Capsicum (Shimla Mirch)','Aloo Matar',
+		'Aloo Mushroom', 'Aloo Palak', 'Aloo Parval', 'Aloo Soyabean','Bhindi (Okra) Masala (Gravy)',
 		'Butter Chicken','Chana Dal','Chana Masala', 'Chhole', 'Chicken Chettinad',
 		'Chicken Curry','Chicken Do Pyaza','Chicken Handi','Chicken Korma',
 		'Chicken Masala', 'Chicken Mughlai', 'Chicken Saagwala','Chicken Tikka Masala','Dal Fry',
