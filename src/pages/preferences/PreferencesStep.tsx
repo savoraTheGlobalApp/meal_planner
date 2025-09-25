@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Category, usePrefStore } from '@/store/preferences';
+import { Category, usePrefStore, initialItems } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 import { X } from 'lucide-react';
 
@@ -35,7 +35,7 @@ export function PreferencesStep() {
 				<div className="mt-4 space-y-2 max-h-[50vh] overflow-auto pr-1">
 					{items.map(item => {
 						const checked = selected[cat].includes(item);
-						const isCustomOnly = !initialBuiltIn[cat].includes(item);
+						const isCustomOnly = !initialItems[cat].includes(item);
 						return (
 							<label key={item} className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 cursor-pointer transition ${checked? getSelectedStyle(cat) : 'hover:bg-slate-100'}`}>
 								<div className="flex items-center gap-3">
@@ -109,11 +109,6 @@ export function PreferencesStep() {
 	);
 }
 
-const initialBuiltIn: Record<Category, string[]> = {
-	breakfast: ['Poha','Daliya','Upma','Aloo Paratha','Paneer Paratha','Gobhi Paratha','Masala Dosa','Idli Sambhar','Veg Sandwich','Cornflakes','Vermicelli','Chilla/Cheela','Chana','Moong Dal','Maggi','Pasta','Macroni','Bread Omlette','Bread Pakoda','Uttapam','Oats'],
-	dal: ['Moong Dal','Masoor Dal','Chana Dal','Toor (Arhar) Dal','Urad Dal','Rajma','Chhole','Lobia','Malka Masoor'],
-	veg: ['Potato','Paneer','Mushroom','Spinach','Cauliflower','Broccoli','Cabbage','Beans','Peas','Brinjal','Okra (Bhindi)','Capsicum','Bottle Gourd (Lauki)'],
-};
 
 function catClass(cat: Category) {
 	return cat === 'breakfast' ? 'accent-breakfast' : cat === 'dal' ? 'accent-dal' : cat === 'veg' ? 'accent-veg' : 'accent-salad';

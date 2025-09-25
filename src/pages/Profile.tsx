@@ -6,7 +6,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { HelpCircle, ArrowLeft, Menu as MenuIcon, Wand2, ListChecks, CalendarDays, RefreshCcw, Download } from 'lucide-react';
 
 export function Profile() {
-    const { user, logout } = useAuthStore();
+	const { user, logout } = useAuthStore();
     const { scheduleTime, setScheduleTime } = useNotificationStore();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [time, setTime] = useState(scheduleTime || '20:00');
@@ -49,8 +49,8 @@ export function Profile() {
 
     // Show help section if toggled
     if (showHelp) {
-        return (
-            <div className="max-w-xl">
+	return (
+		<div className="max-w-xl">
                 <div className="flex items-center gap-3 mb-6">
                     <button 
                         onClick={() => { setShowHelp(false); navigate('/profile', { replace: true }); }}
@@ -122,9 +122,9 @@ export function Profile() {
                         <div className="flex items-start gap-3">
                             <span className="text-rose-500 font-semibold">•</span>
                             <p>For any concern or feedback, please write to <a href="mailto:hello@icurious.ai" className="text-blue-600 hover:underline">hello@icurious.ai</a> or <a href="mailto:inherentlycuriousai@gmail.com" className="text-blue-600 hover:underline">inherentlycuriousai@gmail.com</a></p>
-                        </div>
-                    </div>
-                </div>
+				</div>
+				</div>
+			</div>
             </div>
         );
     }
