@@ -101,27 +101,27 @@ export function Profile() {
                     <div className="space-y-3 text-sm">
                         <div className="flex items-start gap-3">
                             <span className="text-blue-500 font-semibold">•</span>
-                            <p>If you see repeated meals on different days, consider adding more preferences to get better variety.</p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <span className="text-green-500 font-semibold">•</span>
-                            <p>You can change your daily reminder time from the hamburger icon in the upper right corner.</p>
+                            <p>Add more preferences for better variety</p>
                         </div>
                         <div className="flex items-start gap-3">
                             <span className="text-blue-500 font-semibold">•</span>
-                            <p>Use the New Menu button present in weekly view to get a new menu for the same preferences.</p>
+                            <p>Use "New Menu" button for fresh weekly menu</p>
                         </div>
                         <div className="flex items-start gap-3">
                             <span className="text-purple-500 font-semibold">•</span>
-                            <p>Use the regenerate button on individual meals to get different options for specific days.</p>
+                            <p>Regenerate individual meals for specific days</p>
                         </div>
                         <div className="flex items-start gap-3">
                             <span className="text-orange-500 font-semibold">•</span>
-                            <p>Download your weekly menu as PDF to share with family or keep for reference.</p>
+                            <p>Download PDF to share or keep for reference</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <span className="text-green-500 font-semibold">•</span>
+                            <p>Change reminder time via Profile settings</p>
                         </div>
                         <div className="flex items-start gap-3">
                             <span className="text-rose-500 font-semibold">•</span>
-                            <p>For any concern or feedback, please write to <a href="mailto:hello@icurious.ai" className="text-blue-600 hover:underline">hello@icurious.ai</a> or <a href="mailto:inherentlycuriousai@gmail.com" className="text-blue-600 hover:underline">inherentlycuriousai@gmail.com</a></p>
+                            <p>For concerns & feedback, please write to: <a href="mailto:hello@icurious.ai" className="text-blue-600 hover:underline">hello@icurious.ai</a> or <a href="mailto:inherentlycuriousai@gmail.com" className="text-blue-600 hover:underline">inherentlycuriousai@gmail.com</a></p>
 				</div>
 				</div>
 			</div>
