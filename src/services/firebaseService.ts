@@ -137,3 +137,47 @@ export const updateUserName = async (userId: string, name: string) => {
     return { error: error.message };
   }
 };
+
+export const saveUserFeedback = async (userId: string, feedback: {
+  menuSatisfaction: number;
+  foodOptionsSatisfaction: number;
+  userExperience: number;
+  overallUsefulness: number;
+  message: string;
+}) => {
+  try {
+    // Check if user has already submitted 5 feedbacks
+    const feedbackQuery = query(
+      collection(db, 'feedback'),
+      where('userId', '==', userId)
+    );
+    const feedbackSnapshot = await getDocs(feedbackQuery);
+    
+    if (feedbackSnapshot.size >= 5) {
+      return { error: 'You have already submitted the maximum number of feedbacks (5). Thank you for your participation!' };
+    }
+
+    await setDoc(doc(db, 'feedback', `${userId}_${Date.now()}`), {
+      userId,
+      feedback,
+      submittedAt: new Date(),
+      userName: (await getUserData(userId)).data?.name || 'Unknown'
+    });
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};
+
+export const getUserFeedbackCount = async (userId: string) => {
+  try {
+    const feedbackQuery = query(
+      collection(db, 'feedback'),
+      where('userId', '==', userId)
+    );
+    const feedbackSnapshot = await getDocs(feedbackQuery);
+    return { count: feedbackSnapshot.size, error: null };
+  } catch (error: any) {
+    return { count: 0, error: error.message };
+  }
+};
