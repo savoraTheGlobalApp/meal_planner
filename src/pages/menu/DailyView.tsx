@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
-import { sumNutrition, formatNutrition, sumNutritionWithUnknown, formatNutritionSummary } from '@/utils/nutrition';
+import { sumNutrition, formatNutrition, sumNutritionWithUnknown } from '@/utils/nutrition';
+import { NutritionDisplay } from '@/components/NutritionDisplay';
 
 const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -12,6 +13,23 @@ export function DailyView() {
 	const prefs = usePrefStore(s => s.selected);
 	const { week, generate, regenerateMeal, regeneratingMeal } = useMenuStore();
 	const navigate = useNavigate();
+	const [infoOpen, setInfoOpen] = useState(false);
+	const infoWrapperRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const handleClose = (e: Event) => {
+			if (!infoWrapperRef.current) return;
+			if (!infoWrapperRef.current.contains(e.target as Node)) {
+				setInfoOpen(false);
+			}
+		};
+		document.addEventListener('mousedown', handleClose);
+		document.addEventListener('touchstart', handleClose, { passive: true });
+		return () => {
+			document.removeEventListener('mousedown', handleClose);
+			document.removeEventListener('touchstart', handleClose as any);
+		};
+	}, []);
 
 	// Get today's date and calculate the date for the current day
 	const today = new Date();
@@ -54,7 +72,26 @@ export function DailyView() {
 						{isToday && <span className="ml-2 text-blue-600 font-medium">(Today)</span>}
 					</p>
 				</div>
-				<Link to="/menu/weekly" className="btn btn-outline">Weekly view</Link>
+				<div className="flex items-center gap-2">
+					{/* Global nutrition info */}
+					<div className="relative" ref={infoWrapperRef}>
+						<button
+							className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors duration-200 text-sm font-semibold"
+							onClick={() => setInfoOpen(prev => !prev)}
+							title="Nutrition information"
+						>
+							ⓘ
+						</button>
+						{infoOpen && (
+							<div className="fixed top-32 left-1/2 -translate-x-1/2 w-72 max-w-[90vw] bg-slate-800 text-white text-xs rounded-lg p-3 shadow-lg z-50">
+								<div className="font-medium mb-1 text-center">Nutrition Data Notice</div>
+								<p className="text-slate-300 leading-relaxed text-center">We're constantly expanding our nutrition database. The values shown are for items with available data.</p>
+								<div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-6 border-r-6 border-b-6 border-transparent border-b-slate-800"></div>
+							</div>
+						)}
+					</div>
+					<Link to="/menu/weekly" className="btn btn-outline">Weekly view</Link>
+                </div>
 			</div>
 
 			{/* Meals */}
@@ -68,7 +105,7 @@ export function DailyView() {
                             {day?.breakfast && (() => {
                                 const { total, unknown } = sumNutritionWithUnknown([day.breakfast]);
                                 return (
-                                    <div className="mt-1 text-xs text-slate-500">{formatNutritionSummary(total, unknown)}</div>
+                                    <NutritionDisplay total={total} unknown={unknown} className="mt-1" showInfoIcon={false} />
                                 );
                             })()}
 						</div>
@@ -100,7 +137,7 @@ export function DailyView() {
                             {day?.lunch && day.lunch.length > 0 && (() => {
                                 const { total, unknown } = sumNutritionWithUnknown(day.lunch);
                                 return (
-                                    <div className="mt-1 text-xs text-slate-500">{formatNutritionSummary(total, unknown)}</div>
+                                    <NutritionDisplay total={total} unknown={unknown} className="mt-1" showInfoIcon={false} />
                                 );
                             })()}
 						</div>
@@ -132,7 +169,7 @@ export function DailyView() {
                             {day?.dinner && day.dinner.length > 0 && (() => {
                                 const { total, unknown } = sumNutritionWithUnknown(day.dinner);
                                 return (
-                                    <div className="mt-1 text-xs text-slate-500">{formatNutritionSummary(total, unknown)}</div>
+                                    <NutritionDisplay total={total} unknown={unknown} className="mt-1" showInfoIcon={false} />
                                 );
                             })()}
 						</div>

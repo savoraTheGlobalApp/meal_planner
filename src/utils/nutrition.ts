@@ -147,8 +147,16 @@ export function sumNutritionWithUnknown(items: string[]): { total: Nutrition; un
 export function formatNutritionSummary(total: Nutrition, unknown: string[]): string {
   const base = formatNutrition(total);
   if (!unknown.length) return base;
-  const missing = unknown.join(', ');
-  return `${base} • Missing data for: ${missing}`;
+  return base; // Return only the base nutrition info, we'll handle unknown items separately
+}
+
+export function hasUnknownItems(unknown: string[]): boolean {
+  return unknown.length > 0;
+}
+
+export function getUnknownItemsText(unknown: string[]): string {
+  if (!unknown.length) return '';
+  return `Nutrition data not available for: ${unknown.join(', ')}`;
 }
 
 
