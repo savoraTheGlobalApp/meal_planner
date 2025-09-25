@@ -53,7 +53,7 @@ export function Profile() {
             <div className="max-w-xl">
                 <div className="flex items-center gap-3 mb-6">
                     <button 
-                        onClick={() => setShowHelp(false)}
+                        onClick={() => { setShowHelp(false); navigate('/profile', { replace: true }); }}
                         className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
                     >
                         <ArrowLeft size={20} />
