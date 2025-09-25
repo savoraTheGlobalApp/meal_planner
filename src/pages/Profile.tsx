@@ -3,7 +3,7 @@ import { useNotificationStore } from '@/store/notifications';
 import { useState } from 'react';
 import { updateUserName } from '@/services/firebaseService';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { HelpCircle, ArrowLeft, Menu as MenuIcon } from 'lucide-react';
+import { HelpCircle, ArrowLeft, Menu as MenuIcon, Wand2, ListChecks, CalendarDays, RefreshCcw, Download } from 'lucide-react';
 
 export function Profile() {
     const { user, logout } = useAuthStore();
@@ -61,8 +61,43 @@ export function Profile() {
                     </button>
                 </div>
                 
-                <div className="card space-y-4">
-                    <h2 className="text-xl font-semibold">Tips & Help</h2>
+                {/* Visual Onboarding Summary */}
+                <div className="card">
+                    <h3 className="text-lg font-semibold mb-3">How it works</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-stretch">
+                        {/* Step 1 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-yellow-50 to-orange-50 border border-orange-100">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-2"><Wand2 size={18} /></div>
+                            <div className="text-sm font-semibold text-slate-800">Welcome</div>
+                            <div className="text-xs text-slate-500">Your personal meal planner</div>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 border border-pink-100">
+                            <div className="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mb-2"><ListChecks size={18} /></div>
+                            <div className="text-sm font-semibold text-slate-800">Pick Favorites</div>
+                            <div className="text-xs text-slate-500">Breakfast • Dal • Veg</div>
+                        </div>
+
+                        {/* Step 3 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100">
+                            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2"><CalendarDays size={18} /></div>
+                            <div className="text-sm font-semibold text-slate-800">7‑Day Menu</div>
+                            <div className="text-xs text-slate-500">Weekly & daily views</div>
+                        </div>
+
+                        {/* Step 4 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
+                            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2"><RefreshCcw size={18} /></div>
+                            <div className="text-sm font-semibold text-slate-800">Use & Share</div>
+                            <div className="text-xs text-slate-500">Regenerate meals • <span className="inline-flex items-center gap-1"><Download size={12}/> PDF</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tips */}
+                <div className="card space-y-4 mt-4">
+                    <h2 className="text-xl font-semibold">Tips</h2>
                     <div className="space-y-3 text-sm">
                         <div className="flex items-start gap-3">
                             <span className="text-blue-500 font-semibold">•</span>
@@ -72,7 +107,7 @@ export function Profile() {
                             <span className="text-green-500 font-semibold">•</span>
                             <p>You can change your daily reminder time from the hamburger icon in the upper right corner.</p>
                         </div>
-						<div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3">
                             <span className="text-blue-500 font-semibold">•</span>
                             <p>Use the New Menu button present in weekly view to get a new menu for the same preferences.</p>
                         </div>
@@ -115,15 +150,8 @@ export function Profile() {
                         <HelpCircle size={18} className="text-indigo-600" />
                     </div>
                     <p className="text-sm">
-                        Do check out the Tips & Help button in the upper left corner for quick hints and guidance.
+                        Check the Help button to see How it works and get some useful tips.
                     </p>
-                </div>
-            </div>
-
-            <div className="card mt-4 bg-gradient-to-br from-orange-100 to-red-100 border border-orange-200">
-                <div className="text-center py-4">
-                    <h3 className="text-lg font-bold text-orange-800 mb-1">Goodbye stress, hello Meals.</h3>
-                    <p className="text-sm text-orange-600">Your meal planning journey starts here</p>
                 </div>
             </div>
 
