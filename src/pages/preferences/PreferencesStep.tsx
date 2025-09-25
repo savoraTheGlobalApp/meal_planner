@@ -6,8 +6,8 @@ import { X } from 'lucide-react';
 
 const order: Category[] = ['breakfast','dal','veg'];
 const nextLabel: Record<Category,string> = {
-	breakfast: 'Select your Dal',
-	dal: 'Select your Vegetable',
+	breakfast: 'Select your Dal/Curry',
+	dal: 'Select your Sabzi/Dry Dish',
 	veg: 'Generate 7-day Menu',
 }
 
@@ -30,7 +30,7 @@ export function PreferencesStep() {
 	return (
 		<div className="max-w-2xl space-y-4">
 			<div className="card">
-				<h2 className="text-xl font-semibold capitalize mb-2">Select your {cat === 'veg' ? 'Vegetables' : cat === 'dal' ? 'Dal' : 'Breakfast'} preferences</h2>
+				<h2 className="text-xl font-semibold capitalize mb-2">Select your {cat === 'veg' ? 'Sabzi/Dry Dish' : cat === 'dal' ? 'Dal/Curry' : 'Breakfast'} preferences</h2>
 				<p className="text-slate-300">Tap to toggle. Add custom items if missing.</p>
 				<div className="mt-4 space-y-2 max-h-[50vh] overflow-auto pr-1">
 					{items.map(item => {
@@ -52,7 +52,7 @@ export function PreferencesStep() {
 					})}
 				</div>
 				<div className="mt-4 flex gap-2">
-					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'vegetable' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
+					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'sabzi/dry dish' : cat === 'dal' ? 'dal/curry' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
 					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
             <div className="mt-6 flex justify-between gap-2">
