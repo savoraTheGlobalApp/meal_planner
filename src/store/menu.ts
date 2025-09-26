@@ -105,25 +105,28 @@ function pickDifferentFromList(arr: string[], avoids: string[], fallback: string
 // Advanced meal generation with round-robin + randomness + component-based duplicate prevention
 class MealGenerator {
 	private breakfastIndex = 0;
-	private lunchDalIndex = 0;
+	private lunchDalCurryIndex = 0;
 	private lunchVegIndex = 0;
-	private dinnerDalIndex = 0;
+	private dinnerDalCurryIndex = 0;
 	private dinnerVegIndex = 0;
 	private preferences: Preferences;
 	private previousMeals: Meal[] = []; // Track previous meals for component checking
+	private combinedDalCurry: string[] = []; // Combined dal and curry list
 
 	constructor(preferences: Preferences) {
 		this.preferences = preferences;
-		// Shuffle dinner dal and veg arrays for variety
+		// Create combined dal and curry list
+		this.combinedDalCurry = [...preferences.dal, ...preferences.curry];
+		// Shuffle dinner arrays for variety
 		this.shuffleDinnerArrays();
 	}
 
 	private shuffleDinnerArrays() {
-		// Create shuffled copies for dinner to create variety using Fisher–Yates shuffle
-		const shuffledDal = [...this.preferences.dal];
-		for (let i = shuffledDal.length - 1; i > 0; i--) {
+		// Create shuffled copy of combined dal+curry for dinner variety using Fisher–Yates shuffle
+		const shuffledDalCurry = [...this.combinedDalCurry];
+		for (let i = shuffledDalCurry.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
-			[shuffledDal[i], shuffledDal[j]] = [shuffledDal[j], shuffledDal[i]];
+			[shuffledDalCurry[i], shuffledDalCurry[j]] = [shuffledDalCurry[j], shuffledDalCurry[i]];
 		}
 		const shuffledVeg = [...this.preferences.veg];
 		for (let i = shuffledVeg.length - 1; i > 0; i--) {
@@ -132,7 +135,7 @@ class MealGenerator {
 		}
 		
 		// Store shuffled arrays for dinner
-		(this as any).dinnerDalArray = shuffledDal;
+		(this as any).dinnerDalCurryArray = shuffledDalCurry;
 		(this as any).dinnerVegArray = shuffledVeg;
 	}
 
@@ -147,6 +150,15 @@ class MealGenerator {
 	private shouldUseRandom(): boolean {
 		// 10% chance for random selection
 		return Math.random() < 0.1;
+	}
+
+	private selectDalCurryItem(array: string[], index: number): string {
+		if (!array.length) return 'Item';
+		// 90% round-robin, 10% random
+		if (this.shouldUseRandom()) {
+			return array[Math.floor(Math.random() * array.length)];
+		}
+		return array[index % array.length];
 	}
 
 	// Check if a dish conflicts with components in the same meal
@@ -171,10 +183,10 @@ class MealGenerator {
 		return false;
 	}
 
-	// Check if a dish conflicts with same-day meals (Aloo exception applies)
+	// Check if a dish conflicts with same-day meals
 	private hasComponentConflictWithSameDay(dish: string, sameDayMeals: string[]): boolean {
-		// For same day, Aloo can repeat across meals (lunch to dinner) but not within same meal
-		return sharesComponentsWithAny(dish, sameDayMeals, true); // Allow Aloo across meals on same day
+		// No Aloo exception - all components must be different across same day
+		return sharesComponentsWithAny(dish, sameDayMeals, false);
 	}
 
 	// Find a dish that doesn't conflict with components
@@ -217,6 +229,48 @@ class MealGenerator {
 		return pickRandom(sameMealFiltered) || sameMealFiltered[0];
 	}
 
+	// Find a dal/curry dish with round-robin logic (90% round-robin, 10% random)
+	private findNonConflictingDalCurryDish(
+		availableDishes: string[], 
+		avoidDishes: string[], 
+		previousMeals: Meal[],
+		sameDayMeals: string[] = [],
+		index: number
+	): string {
+		// First, try to find a dish that doesn't conflict with same meal components
+		const sameMealFiltered = availableDishes.filter(dish => 
+			!this.hasComponentConflictInSameMeal(dish, avoidDishes)
+		);
+		
+		if (sameMealFiltered.length === 0) {
+			// If no options without same-meal conflicts, use original logic
+			return pickDifferentFromList(availableDishes, avoidDishes, availableDishes[0] || 'Item');
+		}
+		
+		// Then, try to find one that doesn't conflict with same day meals
+		const sameDayFiltered = sameMealFiltered.filter(dish => 
+			!this.hasComponentConflictWithSameDay(dish, sameDayMeals)
+		);
+		
+		if (sameDayFiltered.length > 0) {
+			// Finally, try to find one that doesn't conflict with previous days
+			const previousDayFiltered = sameDayFiltered.filter(dish => 
+				!this.hasComponentConflictWithPrevious(dish, previousMeals)
+			);
+			
+			if (previousDayFiltered.length > 0) {
+				// Use round-robin logic (90% round-robin, 10% random)
+				return this.selectDalCurryItem(previousDayFiltered, index);
+			}
+			
+			// Fallback to same-day filtered options with round-robin logic
+			return this.selectDalCurryItem(sameDayFiltered, index);
+		}
+		
+		// Fallback to same-meal filtered options with round-robin logic
+		return this.selectDalCurryItem(sameMealFiltered, index);
+	}
+
 	generateMeal(): Meal {
 		// Breakfast: Use component-based conflict detection
 		const breakfast = this.findNonConflictingDish(
@@ -227,14 +281,15 @@ class MealGenerator {
 		);
 		this.breakfastIndex++;
 
-		// Lunch Dal: Use component-based conflict detection
-		const lunchDal = this.findNonConflictingDish(
-			this.preferences.dal,
+		// Lunch Dal/Curry: Use combined list with 90% round-robin, 10% random
+		const lunchDal = this.findNonConflictingDalCurryDish(
+			this.combinedDalCurry,
 			[], // No same-meal conflicts yet
 			this.previousMeals,
-			[breakfast] // Include breakfast for same-day conflict checking
+			[breakfast], // Include breakfast for same-day conflict checking
+			this.lunchDalCurryIndex
 		);
-		this.lunchDalIndex++;
+		this.lunchDalCurryIndex++;
 
 		// Lunch Veg: Use component-based conflict detection, avoid conflicts with lunch dal
 		const lunchVeg = this.findNonConflictingDish(
@@ -245,23 +300,22 @@ class MealGenerator {
 		);
 		this.lunchVegIndex++;
 
-		// Dinner Dal: Use component-based conflict detection, avoid conflicts with lunch items
-		// Aloo exception: can have Aloo in dinner even if lunch had Aloo
-		const dinnerDal = this.findNonConflictingDish(
-			(this as any).dinnerDalArray,
+		// Dinner Dal/Curry: Use combined list with 90% round-robin, 10% random
+		const dinnerDal = this.findNonConflictingDalCurryDish(
+			(this as any).dinnerDalCurryArray,
 			[lunchDal, lunchVeg], // Avoid conflicts with lunch items
 			this.previousMeals,
-			[breakfast, lunchDal, lunchVeg] // Include all same-day meals for Aloo exception
+			[breakfast, lunchDal, lunchVeg], // Include all same-day meals
+			this.dinnerDalCurryIndex
 		);
-		this.dinnerDalIndex++;
+		this.dinnerDalCurryIndex++;
 
 		// Dinner Veg: Use component-based conflict detection, avoid conflicts with all other items
-		// Aloo exception: can have Aloo in dinner even if lunch had Aloo
 		const dinnerVeg = this.findNonConflictingDish(
 			(this as any).dinnerVegArray,
 			[lunchDal, lunchVeg, dinnerDal], // Avoid conflicts with all other items
 			this.previousMeals,
-			[breakfast, lunchDal, lunchVeg, dinnerDal] // Include all same-day meals for Aloo exception
+			[breakfast, lunchDal, lunchVeg, dinnerDal] // Include all same-day meals
 		);
 		this.dinnerVegIndex++;
 

@@ -6,7 +6,8 @@ export function Preferences() {
 	
 	const categories = [
 		{ key: 'breakfast' as const, label: 'Breakfast', color: 'rose', icon: '🌅' },
-		{ key: 'dal' as const, label: 'Dal/Curry', color: 'amber', icon: '🍲' },
+		{ key: 'dal' as const, label: 'Dal', color: 'amber', icon: '🍲' },
+		{ key: 'curry' as const, label: 'Curry', color: 'purple', icon: '🍛' },
 		{ key: 'veg' as const, label: 'Sabzi/Dry Dish', color: 'emerald', icon: '🍅' }
 	];
 
@@ -37,11 +38,12 @@ export function Preferences() {
 				<div className="card bg-gradient-to-r from-emerald-50 to-teal-100 border-emerald-200">
 					<div className="text-center">
 						<h3 className="text-lg font-semibold text-slate-800 mb-4">Preference Summary</h3>
-						<div className="grid grid-cols-3 gap-4">
+						<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
 							{categories.map(({ key, label, color, icon }) => {
 								const colorMap: Record<string, { bg: string; ring: string; text: string; chip: string }> = {
 									rose: { bg: 'bg-rose-50', ring: 'ring-rose-200', text: 'text-rose-600', chip: 'chip-rose' },
 									amber: { bg: 'bg-amber-50', ring: 'ring-amber-200', text: 'text-amber-600', chip: 'chip-amber' },
+									purple: { bg: 'bg-purple-50', ring: 'ring-purple-200', text: 'text-purple-600', chip: 'chip-purple' },
 									emerald: { bg: 'bg-emerald-50', ring: 'ring-emerald-200', text: 'text-emerald-600', chip: 'chip-emerald' },
 								};
 								const c = colorMap[color];
@@ -70,6 +72,7 @@ export function Preferences() {
 						const colorClasses: Record<string, string> = {
 							rose: 'bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200',
 							amber: 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200',
+							purple: 'bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200',
 							emerald: 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200',
 						};
 						const editBtnBase = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm';

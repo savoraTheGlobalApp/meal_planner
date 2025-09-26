@@ -2,39 +2,28 @@ import { create } from 'zustand';
 import { updateUserPreferences } from '../services/firebaseService';
 import { useAuthStore } from './auth';
 
-export type Category = 'breakfast' | 'dal' | 'veg';
+export type Category = 'breakfast' | 'dal' | 'curry' | 'veg';
 
 export type Preferences = Record<Category, string[]>;
 
 export const initialItems: Record<Category, string[]> = {
 	breakfast: ['Poha','Daliya','Upma','Aloo Paratha','Paneer Paratha','Gobhi Paratha','Masala Dosa','Idli Sambhar','Veg Sandwich','Cornflakes','Vermicelli','Chilla/Cheela','Chana','Moong','Maggi','Pasta','Macroni','Bread Omlette','Bread Pakoda','Uttapam','Oats'],
 	dal: [
-		'Aloo (Potato)', 'Aloo Baingan', 'Aloo Bhindi', 'Aloo Capsicum (Shimla Mirch)','Aloo Matar',
-		'Aloo Mushroom', 'Aloo Palak', 'Aloo Parval', 'Aloo Soyabean','Bhindi (Okra) Masala (Gravy)',
-		'Butter Chicken','Chana Dal','Chana Masala', 'Chhole', 'Chicken Chettinad',
-		'Chicken Curry','Chicken Do Pyaza','Chicken Handi','Chicken Korma',
-		'Chicken Masala', 'Chicken Mughlai', 'Chicken Saagwala','Chicken Tikka Masala','Dal Fry',
-		'Dal Makhani','Dal Tadka','Egg Curry',
-		'Egg Masala','Anda Do Pyaza','Fish Curry','Fish Fry Curry',
-		'Fish Korma','Fish Masala','Kadai Chicken',
-		'Kadai Paneer','Lauki Chana Dal','Lobia (Black-eyed Beans)','Malka Masoor',
-		'Masoor Dal','Matar Paneer','Moong Dal',
-		'Mushroom Masala','Palak Dal','Palak Paneer','Paneer Bhurji',
-		'Paneer Butter Masala', 'Parval (Pointed Gourd)', 'Rajma (Kidney Beans)',
-		'Shahi Paneer', 'Soyabean Curry','Toor (Arhar) Dal','Urad Dal'
+		'Chana Dal','Kala Chana Masala', 'Chhole',
+		'Dal Makhani', 'Lauki Chana Dal','Lobia (Black-eyed Beans)','Malka Masoor',
+		'Masoor Dal','Moong Dal', 'Rajma (Kidney Beans)', 'Toor (Arhar) Dal','Urad Dal'
+	  ],
+	curry: [
+		'Aloo Matar', 'Matar Paneer', 'Palak Paneer', 'Besan Pakoda Curry',
+		'Soyabean Curry', 'Mushroom Curry', 'Anda (Egg) Curry', 'Chicken Curry', 'Fish Curry'
 	  ],
 	  veg: [
-		'Aloo (Potato)','Aloo Baingan','Aloo Beans','Aloo Bhindi', 'Aloo Broccoli', 'Aloo Capsicum', 
-		'Aloo Chana',  'Aloo Gobhi', 'Aloo Kaddu', 'Aloo Matar','Aloo Mushroom','Aloo Palak', 'Aloo Parval',
-        'Aloo Patta Gobhi', 'Aloo Shimla Mirch', 'Aloo Tinda', 'Baingan (Brinjal)','Baingan Bharta','Beans', 'Beetroot',
-        'Beans Poriyal','Bhindi (Okra)','Bhindi Masala (Dry)','Broccoli', 'Cabbage', 'Carrot',	
-		'Cabbage Peas','Capsicum (Shimla Mirch)','Chicken Fry','Egg Bhurji',
-		'Fish Fry','Gajar Matar','Gobhi (Cauliflower)','Kaddu (Pumpkin) Dry Sabzi',
-		'Kadai Paneer','Keema Fry (Minced Meat Fry)','Lauki (Bottle Gourd)',
-		'Matar (Peas)','Matar Paneer','Mix Veg Sabzi','Mushroom',
-		'Palak (Spinach)','Palak Paneer','Paneer',
-		'Paneer Bhurji','Patta Gobhi (Cabbage)','Shahi Paneer','Tinda Masala'
-	  ],	  
+		'Aloo Capsicum (Shimla Mirch)', 'Baingan (Brinjal)','Beans',
+        'Bhindi (Okra)','Broccoli', 'Carrot',
+		'Gobhi (Cauliflower)','Kaddu (Pumpkin) Dry Sabzi',
+		'Lauki (Bottle Gourd)','Mix Veg Sabzi','Mushroom',
+		'Saag (Green leafy Veg)', 'Patta Gobhi (Cabbage)'
+	  ],
 };
 
 type PrefState = {
@@ -50,7 +39,7 @@ type PrefState = {
 
 export const usePrefStore = create<PrefState>((set, get) => ({
 	available: initialItems,
-	selected: { breakfast: [], dal: [], veg: [] },
+	selected: { breakfast: [], dal: [], curry: [], veg: [] },
 	loading: false,
     addCustom: async (cat, item) => {
 		item = item.trim();
@@ -132,6 +121,7 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 		const migratedPreferences: Preferences = {
 			breakfast: preferences.breakfast || [],
 			dal: preferences.dal || [],
+			curry: preferences.curry || [],
 			veg: preferences.veg || []
 		};
 		// If there's old salad data, we can optionally migrate some items to vegetables
@@ -158,6 +148,7 @@ export const usePrefStore = create<PrefState>((set, get) => ({
 			available: {
 				breakfast: mergeAvailable(initialItems.breakfast, migratedPreferences.breakfast),
 				dal: mergeAvailable(initialItems.dal, migratedPreferences.dal),
+				curry: mergeAvailable(initialItems.curry, migratedPreferences.curry),
 				veg: mergeAvailable(initialItems.veg, migratedPreferences.veg),
 			}
 		});

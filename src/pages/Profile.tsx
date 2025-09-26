@@ -177,8 +177,8 @@ export function Profile() {
 
     // Show feedback form if toggled
     if (showFeedback) {
-        return (
-            <div className="max-w-xl">
+	return (
+		<div className="max-w-xl">
                 <div className="flex items-center gap-3 mb-6">
                     <button 
                         onClick={() => { setShowFeedback(false); navigate('/profile'); }}
@@ -264,7 +264,7 @@ export function Profile() {
                         </div>
 
                         {/* Question 4 */}
-                        <div>
+				<div>
                             <label className="block text-sm font-medium text-slate-700 mb-3">
                                 How useful is the app overall?
                             </label>
@@ -283,10 +283,10 @@ export function Profile() {
                                     </button>
                                 ))}
                             </div>
-                        </div>
+				</div>
 
                         {/* Optional message */}
-                        <div>
+				<div>
                             <label className="block text-sm font-medium text-slate-700 mb-3">
                                 Additional feedback (optional)
                             </label>
@@ -353,8 +353,8 @@ export function Profile() {
                         <p className="text-sm text-slate-500">
                             We appreciate you taking the time to share your thoughts with us.
                         </p>
-                    </div>
-                </div>
+				</div>
+			</div>
             </div>
         );
     }

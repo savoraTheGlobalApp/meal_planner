@@ -52,6 +52,8 @@ body {
 
 .accent-dal { accent-color: #f59e0b; }
 
+.accent-curry { accent-color: #8b5cf6; }
+
 .accent-veg { accent-color: #22c55e; }
 
 .accent-salad { accent-color: #8b5cf6; }
@@ -59,6 +61,7 @@ body {
 .chip { @apply inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-semibold; }
 .chip-rose { @apply bg-rose-100 text-rose-800 border border-rose-300; }
 .chip-amber { @apply bg-amber-100 text-amber-800 border border-amber-300; }
+.chip-purple { @apply bg-purple-100 text-purple-800 border border-purple-300; }
 .chip-emerald { @apply bg-emerald-100 text-emerald-800 border border-emerald-300; }
 .chip-violet { @apply bg-violet-100 text-violet-800 border border-violet-300; }
 

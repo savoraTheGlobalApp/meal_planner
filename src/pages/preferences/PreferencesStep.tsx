@@ -4,10 +4,11 @@ import { Category, usePrefStore, initialItems } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 import { X, Search } from 'lucide-react';
 
-const order: Category[] = ['breakfast','dal','veg'];
+const order: Category[] = ['breakfast','dal','curry','veg'];
 const nextLabel: Record<Category,string> = {
-	breakfast: 'Select your Dal/Curry',
-	dal: 'Select your Sabzi/Dry Dish',
+	breakfast: 'Select your Dal',
+	dal: 'Select your Curry',
+	curry: 'Select your Sabzi/Dry Dish',
 	veg: 'Generate 7-day Menu',
 }
 
@@ -39,7 +40,7 @@ export function PreferencesStep() {
 	return (
 		<div className="max-w-2xl space-y-4">
 			<div className="card">
-				<h2 className="text-xl font-semibold capitalize mb-2">Select your {cat === 'veg' ? 'Sabzi/Dry Dish' : cat === 'dal' ? 'Dal/Curry' : 'Breakfast'} preferences</h2>
+				<h2 className="text-xl font-semibold capitalize mb-2">Select your {cat === 'veg' ? 'Sabzi/Dry Dish' : cat === 'dal' ? 'Dal' : cat === 'curry' ? 'Curry' : 'Breakfast'} preferences</h2>
 				<p className="text-slate-300">Tap to toggle. Add custom items if missing.</p>
 				
 				{/* Search Bar */}
@@ -48,7 +49,7 @@ export function PreferencesStep() {
 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
 						<input 
 							type="text" 
-							placeholder={`Search ${cat === 'veg' ? 'sabzi/dry dish' : cat === 'dal' ? 'dal/curry' : 'breakfast'} items...`}
+							placeholder={`Search ${cat === 'veg' ? 'sabzi/dry dish' : cat === 'dal' ? 'dal' : cat === 'curry' ? 'curry' : 'breakfast'} items...`}
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 							className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -106,7 +107,7 @@ export function PreferencesStep() {
 					)}
 				</div>
 				<div className="mt-4 flex gap-2">
-					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'sabzi/dry dish' : cat === 'dal' ? 'dal/curry' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
+					<input className="input bg-white border-slate-300 text-slate-900 placeholder-slate-500" placeholder={`Add custom ${cat === 'veg' ? 'sabzi/dry dish' : cat === 'dal' ? 'dal' : cat === 'curry' ? 'curry' : cat}`} value={custom} onChange={(e)=>setCustom(e.target.value)} disabled={loading} />
 					<button className="btn btn-outline" onClick={()=>{ if(custom.trim()){ addCustom(cat, custom); setCustom(''); } }} disabled={loading}>Add</button>
 				</div>
             <div className="mt-6 flex justify-between gap-2">
@@ -165,13 +166,14 @@ export function PreferencesStep() {
 
 
 function catClass(cat: Category) {
-	return cat === 'breakfast' ? 'accent-breakfast' : cat === 'dal' ? 'accent-dal' : cat === 'veg' ? 'accent-veg' : 'accent-salad';
+	return cat === 'breakfast' ? 'accent-breakfast' : cat === 'dal' ? 'accent-dal' : cat === 'curry' ? 'accent-curry' : cat === 'veg' ? 'accent-veg' : 'accent-salad';
 }
 
 function getSelectedStyle(cat: Category) {
 	switch(cat) {
 		case 'breakfast': return 'bg-pink-100 border border-pink-300 text-pink-900';
 		case 'dal': return 'bg-amber-100 border border-amber-300 text-amber-900';
+		case 'curry': return 'bg-purple-100 border border-purple-300 text-purple-900';
 		case 'veg': return 'bg-emerald-100 border border-emerald-300 text-emerald-900';
 		default: return 'bg-slate-100 border border-slate-300 text-slate-900';
 	}
