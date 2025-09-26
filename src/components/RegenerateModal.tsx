@@ -9,7 +9,8 @@ export function RegenerateModal() {
 		regenerateModalData, 
 		hideRegenerateModal, 
 		regenerateMealComponent,
-		regeneratingMeal 
+		regeneratingMeal,
+		week
 	} = useMenuStore();
 	const prefs = usePrefStore(s => s.selected);
 	const modalRef = useRef<HTMLDivElement>(null);
@@ -33,21 +34,27 @@ export function RegenerateModal() {
 
 	if (!showRegenerateModal || !regenerateModalData) return null;
 
-	const { dayIndex, mealType, currentMeal } = regenerateModalData;
+	const { dayIndex, mealType } = regenerateModalData;
+	
+	// Get current meal from the store (updated after regeneration)
+	const currentMeal = week[dayIndex]?.[mealType] || [];
 	const [dal, veg] = currentMeal;
 
 	const handleRegenerate = async (component: 'dal' | 'veg' | 'both') => {
 		await regenerateMealComponent(dayIndex, mealType, component, prefs);
-		hideRegenerateModal();
+		// Modal stays open so user can keep regenerating
 	};
 
-	const isRegenerating = regeneratingMeal?.startsWith(`${dayIndex}-${mealType}`);
+	// Check if specific components are being regenerated
+	const isRegeneratingDal = regeneratingMeal === `${dayIndex}-${mealType}-dal`;
+	const isRegeneratingVeg = regeneratingMeal === `${dayIndex}-${mealType}-veg`;
+	const isRegeneratingBoth = regeneratingMeal === `${dayIndex}-${mealType}-both`;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+		<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
 			<div 
 				ref={modalRef}
-				className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+				className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 border border-slate-200"
 			>
 				{/* Header */}
 				<div className="flex items-center justify-between mb-4">
@@ -57,7 +64,7 @@ export function RegenerateModal() {
 					<button
 						onClick={hideRegenerateModal}
 						className="p-1 rounded-lg hover:bg-slate-100 transition-colors"
-						disabled={isRegenerating}
+						disabled={isRegeneratingDal || isRegeneratingVeg || isRegeneratingBoth}
 						title="Close modal"
 						aria-label="Close modal"
 					>
@@ -88,48 +95,47 @@ export function RegenerateModal() {
 				<div className="space-y-3">
 					<button
 						onClick={() => handleRegenerate('dal')}
-						disabled={isRegenerating}
+						disabled={isRegeneratingDal || isRegeneratingVeg || isRegeneratingBoth}
 						className="w-full flex items-center gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						<RotateCcw className="w-4 h-4 text-amber-600" />
+						<RotateCcw className={`w-4 h-4 text-amber-600 ${isRegeneratingDal ? 'animate-spin' : ''}`} />
 						<div className="text-left">
 							<div className="font-medium text-slate-800">Regenerate only Dal/Curry</div>
-							<div className="text-sm text-slate-600">Keep sabzi/dry dish as is</div>
 						</div>
 					</button>
 
 					<button
 						onClick={() => handleRegenerate('veg')}
-						disabled={isRegenerating}
+						disabled={isRegeneratingDal || isRegeneratingVeg || isRegeneratingBoth}
 						className="w-full flex items-center gap-3 p-3 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						<RotateCcw className="w-4 h-4 text-emerald-600" />
+						<RotateCcw className={`w-4 h-4 text-emerald-600 ${isRegeneratingVeg ? 'animate-spin' : ''}`} />
 						<div className="text-left">
 							<div className="font-medium text-slate-800">Regenerate only Sabzi/Dry Dish</div>
-							<div className="text-sm text-slate-600">Keep dal/curry as is</div>
 						</div>
 					</button>
 
 					<button
 						onClick={() => handleRegenerate('both')}
-						disabled={isRegenerating}
+						disabled={isRegeneratingDal || isRegeneratingVeg || isRegeneratingBoth}
 						className="w-full flex items-center gap-3 p-3 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						<RotateCcw className="w-4 h-4 text-blue-600" />
+						<RotateCcw className={`w-4 h-4 text-blue-600 ${isRegeneratingBoth ? 'animate-spin' : ''}`} />
 						<div className="text-left">
 							<div className="font-medium text-slate-800">Regenerate both</div>
-							<div className="text-sm text-slate-600">Regenerate dal/curry and sabzi/dry dish</div>
 						</div>
 					</button>
 				</div>
 
-				{/* Loading indicator */}
-				{isRegenerating && (
-					<div className="mt-4 flex items-center justify-center gap-2 text-slate-600">
-						<RotateCcw className="w-4 h-4 animate-spin" />
-						<span className="text-sm">Regenerating...</span>
-					</div>
-				)}
+				{/* Loading indicator - reserved space to prevent jumping */}
+				<div className="mt-4 h-6 flex items-center justify-center">
+					{(isRegeneratingDal || isRegeneratingVeg || isRegeneratingBoth) && (
+						<div className="flex items-center gap-2 text-slate-600">
+							<RotateCcw className="w-4 h-4 animate-spin" />
+							<span className="text-sm">Regenerating...</span>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
