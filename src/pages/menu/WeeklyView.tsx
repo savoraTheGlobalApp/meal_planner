@@ -5,12 +5,13 @@ import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 import { useAuthStore } from '@/store/auth';
 import { generateMenuPDF } from '@/utils/pdfGenerator';
+import { RegenerateModal } from '@/components/RegenerateModal';
 
 const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 export function WeeklyView() {
 	const prefs = usePrefStore(s => s.selected);
-	const { week, generate, regenerateMeal, loading, regeneratingMeal } = useMenuStore();
+	const { week, generate, regenerateMeal, loading, regeneratingMeal, showRegenerateModalFor } = useMenuStore();
 	const { user } = useAuthStore();
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 	const [showConfirm, setShowConfirm] = useState(false);
@@ -213,7 +214,7 @@ export function WeeklyView() {
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
 									<button 
 										className="regen flex-shrink-0" 
-										onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} 
+										onClick={()=>showRegenerateModalFor(originalIndex,'lunch', orderedWeek[i]?.lunch || [])} 
 										title="Regenerate lunch"
 										disabled={regeneratingMeal !== null}
 									>
@@ -234,7 +235,7 @@ export function WeeklyView() {
 										<span className="text-sm truncate pr-2">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
 									<button 
 										className="regen flex-shrink-0" 
-										onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} 
+										onClick={()=>showRegenerateModalFor(originalIndex,'dinner', orderedWeek[i]?.dinner || [])} 
 										title="Regenerate dinner"
 										disabled={regeneratingMeal !== null}
 									>
@@ -316,7 +317,7 @@ export function WeeklyView() {
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.lunch?.join(', ') ?? '-'}</span>
 									<button 
 										className="regen flex-shrink-0" 
-										onClick={()=>regenerateMeal(originalIndex,'lunch', prefs)} 
+										onClick={()=>showRegenerateModalFor(originalIndex,'lunch', orderedWeek[i]?.lunch || [])} 
 										title="Regenerate lunch"
 										disabled={regeneratingMeal !== null}
 									>
@@ -342,7 +343,7 @@ export function WeeklyView() {
 									<span className="text-sm text-slate-600 leading-relaxed">{orderedWeek[i]?.dinner?.join(', ') ?? '-'}</span>
 									<button 
 										className="regen flex-shrink-0" 
-										onClick={()=>regenerateMeal(originalIndex,'dinner', prefs)} 
+										onClick={()=>showRegenerateModalFor(originalIndex,'dinner', orderedWeek[i]?.dinner || [])} 
 										title="Regenerate dinner"
 										disabled={regeneratingMeal !== null}
 									>
@@ -365,6 +366,9 @@ export function WeeklyView() {
 			</div>
 
 		{/* (Removed bottom desktop card; now shown at top) */}
+		
+		{/* Regenerate Modal */}
+		<RegenerateModal />
 		</div>
 	);
 }

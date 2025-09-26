@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home as HomeIcon, User, Heart, LogOut, Bell, Menu, HelpCircle } from 'lucide-react';
 import { useNotificationStore } from '@/store/notifications';
+import { useMenuStore } from '@/store/menu';
 import appLogo from '/logo.png';
 import { useAuthStore } from '../store/auth';
 import { useState, useEffect } from 'react';
@@ -8,6 +9,7 @@ import { LoadingScreen } from './LoadingScreen';
 
 export function AppShell() {
 	const { user, loading, logout } = useAuthStore();
+	const { clearRegenerationHistory } = useMenuStore();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -35,6 +37,27 @@ export function AppShell() {
 		window.addEventListener('scroll', handleScroll, { passive: true });
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, [lastScrollY]);
+
+	// Clear regeneration history when app closes or refreshes
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			clearRegenerationHistory();
+		};
+
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === 'hidden') {
+				clearRegenerationHistory();
+			}
+		};
+
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		};
+	}, [clearRegenerationHistory]);
 
 	// Show branded loading screen while checking authentication
 	if (loading) {

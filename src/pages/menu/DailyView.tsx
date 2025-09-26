@@ -4,6 +4,7 @@ import { usePrefStore } from '@/store/preferences';
 import { useMenuStore } from '@/store/menu';
 import { sumNutrition, formatNutrition, sumNutritionWithUnknown } from '@/utils/nutrition';
 import { NutritionDisplay } from '@/components/NutritionDisplay';
+import { RegenerateModal } from '@/components/RegenerateModal';
 
 const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -11,7 +12,7 @@ export function DailyView() {
 	const { dayIndex = '0' } = useParams();
 	const i = Math.max(0, Math.min(6, parseInt(dayIndex))); 
 	const prefs = usePrefStore(s => s.selected);
-	const { week, generate, regenerateMeal, regeneratingMeal } = useMenuStore();
+	const { week, generate, regenerateMeal, regeneratingMeal, showRegenerateModalFor } = useMenuStore();
 	const navigate = useNavigate();
 	const [infoOpen, setInfoOpen] = useState(false);
 	const infoWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -143,7 +144,7 @@ export function DailyView() {
 						</div>
 						<button 
 							className="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-all duration-200 disabled:opacity-50" 
-							onClick={()=>regenerateMeal(i,'lunch', prefs)} 
+							onClick={()=>showRegenerateModalFor(i,'lunch', day?.lunch || [])} 
 							title="Regenerate lunch"
 							disabled={regeneratingMeal !== null}
 						>
@@ -175,7 +176,7 @@ export function DailyView() {
 						</div>
 						<button 
 							className="p-2 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-600 hover:text-violet-700 transition-all duration-200 disabled:opacity-50" 
-							onClick={()=>regenerateMeal(i,'dinner', prefs)} 
+							onClick={()=>showRegenerateModalFor(i,'dinner', day?.dinner || [])} 
 							title="Regenerate dinner"
 							disabled={regeneratingMeal !== null}
 						>
@@ -238,6 +239,9 @@ export function DailyView() {
 				</button>
 			</div>
 		</div>
+		
+		{/* Regenerate Modal */}
+		<RegenerateModal />
 		</div>
 	);
 }

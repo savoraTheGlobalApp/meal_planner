@@ -105,13 +105,13 @@ function pickDifferentFromList(arr: string[], avoids: string[], fallback: string
 // Advanced meal generation with round-robin + randomness + component-based duplicate prevention
 class MealGenerator {
 	private breakfastIndex = 0;
-	private lunchDalCurryIndex = 0;
-	private lunchVegIndex = 0;
-	private dinnerDalCurryIndex = 0;
-	private dinnerVegIndex = 0;
-	private preferences: Preferences;
-	private previousMeals: Meal[] = []; // Track previous meals for component checking
-	private combinedDalCurry: string[] = []; // Combined dal and curry list
+	public lunchDalCurryIndex = 0;
+	public lunchVegIndex = 0;
+	public dinnerDalCurryIndex = 0;
+	public dinnerVegIndex = 0;
+	public preferences: Preferences;
+	public previousMeals: Meal[] = []; // Track previous meals for component checking
+	public combinedDalCurry: string[] = []; // Combined dal and curry list
 
 	constructor(preferences: Preferences) {
 		this.preferences = preferences;
@@ -152,14 +152,6 @@ class MealGenerator {
 		return Math.random() < 0.1;
 	}
 
-	private selectDalCurryItem(array: string[], index: number): string {
-		if (!array.length) return 'Item';
-		// 90% round-robin, 10% random
-		if (this.shouldUseRandom()) {
-			return array[Math.floor(Math.random() * array.length)];
-		}
-		return array[index % array.length];
-	}
 
 	// Check if a dish conflicts with components in the same meal
 	private hasComponentConflictInSameMeal(dish: string, otherDishes: string[]): boolean {
@@ -190,7 +182,7 @@ class MealGenerator {
 	}
 
 	// Find a dish that doesn't conflict with components
-	private findNonConflictingDish(
+	public findNonConflictingDish(
 		availableDishes: string[], 
 		avoidDishes: string[], 
 		previousMeals: Meal[],
@@ -229,47 +221,6 @@ class MealGenerator {
 		return pickRandom(sameMealFiltered) || sameMealFiltered[0];
 	}
 
-	// Find a dal/curry dish with round-robin logic (90% round-robin, 10% random)
-	private findNonConflictingDalCurryDish(
-		availableDishes: string[], 
-		avoidDishes: string[], 
-		previousMeals: Meal[],
-		sameDayMeals: string[] = [],
-		index: number
-	): string {
-		// First, try to find a dish that doesn't conflict with same meal components
-		const sameMealFiltered = availableDishes.filter(dish => 
-			!this.hasComponentConflictInSameMeal(dish, avoidDishes)
-		);
-		
-		if (sameMealFiltered.length === 0) {
-			// If no options without same-meal conflicts, use original logic
-			return pickDifferentFromList(availableDishes, avoidDishes, availableDishes[0] || 'Item');
-		}
-		
-		// Then, try to find one that doesn't conflict with same day meals
-		const sameDayFiltered = sameMealFiltered.filter(dish => 
-			!this.hasComponentConflictWithSameDay(dish, sameDayMeals)
-		);
-		
-		if (sameDayFiltered.length > 0) {
-			// Finally, try to find one that doesn't conflict with previous days
-			const previousDayFiltered = sameDayFiltered.filter(dish => 
-				!this.hasComponentConflictWithPrevious(dish, previousMeals)
-			);
-			
-			if (previousDayFiltered.length > 0) {
-				// Use round-robin logic (90% round-robin, 10% random)
-				return this.selectDalCurryItem(previousDayFiltered, index);
-			}
-			
-			// Fallback to same-day filtered options with round-robin logic
-			return this.selectDalCurryItem(sameDayFiltered, index);
-		}
-		
-		// Fallback to same-meal filtered options with round-robin logic
-		return this.selectDalCurryItem(sameMealFiltered, index);
-	}
 
 	generateMeal(): Meal {
 		// Breakfast: Use component-based conflict detection
@@ -281,15 +232,13 @@ class MealGenerator {
 		);
 		this.breakfastIndex++;
 
-		// Lunch Dal/Curry: Use combined list with 90% round-robin, 10% random
-		const lunchDal = this.findNonConflictingDalCurryDish(
+		// Lunch Dal/Curry: Use combined list with conflict detection
+		const lunchDal = this.findNonConflictingDish(
 			this.combinedDalCurry,
 			[], // No same-meal conflicts yet
 			this.previousMeals,
-			[breakfast], // Include breakfast for same-day conflict checking
-			this.lunchDalCurryIndex
+			[breakfast] // Include breakfast for same-day conflict checking
 		);
-		this.lunchDalCurryIndex++;
 
 		// Lunch Veg: Use component-based conflict detection, avoid conflicts with lunch dal
 		const lunchVeg = this.findNonConflictingDish(
@@ -298,17 +247,14 @@ class MealGenerator {
 			this.previousMeals,
 			[breakfast] // Include breakfast for same-day conflict checking
 		);
-		this.lunchVegIndex++;
 
-		// Dinner Dal/Curry: Use combined list with 90% round-robin, 10% random
-		const dinnerDal = this.findNonConflictingDalCurryDish(
+		// Dinner Dal/Curry: Use combined list with conflict detection
+		const dinnerDal = this.findNonConflictingDish(
 			(this as any).dinnerDalCurryArray,
 			[lunchDal, lunchVeg], // Avoid conflicts with lunch items
 			this.previousMeals,
-			[breakfast, lunchDal, lunchVeg], // Include all same-day meals
-			this.dinnerDalCurryIndex
+			[breakfast, lunchDal, lunchVeg] // Include all same-day meals
 		);
-		this.dinnerDalCurryIndex++;
 
 		// Dinner Veg: Use component-based conflict detection, avoid conflicts with all other items
 		const dinnerVeg = this.findNonConflictingDish(
@@ -358,8 +304,17 @@ type MenuState = {
 	week: WeekMenu;
 	loading: boolean;
 	regeneratingMeal: string | null; // Format: "dayIndex-mealType" e.g., "0-breakfast", "2-lunch"
+	showRegenerateModal: boolean;
+	regenerateModalData: { dayIndex: number; mealType: 'lunch'|'dinner'; currentMeal: string[] } | null;
 	generate: (prefs: Preferences) => Promise<void>;
 	regenerateMeal: (dayIndex: number, which: 'breakfast'|'lunch'|'dinner', prefs: Preferences) => Promise<void>;
+	regenerateMealComponent: (dayIndex: number, mealType: 'lunch'|'dinner', component: 'dal'|'veg'|'both', prefs: Preferences) => Promise<void>;
+	showRegenerateModalFor: (dayIndex: number, mealType: 'lunch'|'dinner', currentMeal: string[]) => void;
+	hideRegenerateModal: () => void;
+	regenerateWithHistory: (componentType: 'dal' | 'veg', currentItem: string, availableItems: string[], dayIndex: number, mealType: 'lunch' | 'dinner') => string;
+	getPreviousDayItem: (currentDayIndex: number, componentType: 'dal' | 'veg') => string | null;
+	updateRegenerationHistory: (componentType: 'dal' | 'veg', newItem: string) => void;
+	clearRegenerationHistory: () => void;
 	clearMenu: () => Promise<void>;
 	loadMenu: (menu: WeekMenu) => void;
 };
@@ -368,6 +323,8 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 	week: [],
 	loading: false,
 	regeneratingMeal: null,
+	showRegenerateModal: false,
+	regenerateModalData: null,
 	generate: async (prefs) => {
 		const { user } = useAuthStore.getState();
 		if (!user) return;
@@ -556,5 +513,167 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 	},
 	loadMenu: (menu: WeekMenu) => {
 		set({ week: menu });
+	},
+	regenerateMealComponent: async (dayIndex, mealType, component, prefs) => {
+		const { user } = useAuthStore.getState();
+		if (!user) return;
+		
+		const mealId = `${dayIndex}-${mealType}-${component}`;
+		set({ regeneratingMeal: mealId });
+		
+		const copy = get().week.slice();
+		if (!copy[dayIndex]) {
+			set({ regeneratingMeal: null });
+			return;
+		}
+		
+		// Get current meal
+		const currentMeal = copy[dayIndex][mealType];
+		const currentDal = currentMeal[0];
+		const currentVeg = currentMeal[1];
+		
+		let newDal = currentDal;
+		let newVeg = currentVeg;
+		
+		if (component === 'dal' || component === 'both') {
+			// Regenerate dal/curry with smart history tracking
+			newDal = get().regenerateWithHistory(
+				'dal',
+				currentDal,
+				[...prefs.dal, ...prefs.curry],
+				dayIndex,
+				mealType
+			);
+		}
+		
+		if (component === 'veg' || component === 'both') {
+			// Regenerate vegetable with smart history tracking
+			newVeg = get().regenerateWithHistory(
+				'veg',
+				currentVeg,
+				prefs.veg,
+				dayIndex,
+				mealType
+			);
+		}
+		
+		// Update the meal
+		copy[dayIndex][mealType] = [newDal, newVeg, 'Roti/Rice'];
+		
+		// Save to Firebase
+		const { error } = await updateUserMenu(user.id, copy);
+		if (error) {
+			console.error('Failed to update menu in Firebase:', error);
+		}
+		
+		set({ week: copy, regeneratingMeal: null });
+	},
+	showRegenerateModalFor: (dayIndex, mealType, currentMeal) => {
+		set({ 
+			showRegenerateModal: true,
+			regenerateModalData: { dayIndex, mealType, currentMeal }
+		});
+	},
+	hideRegenerateModal: () => {
+		set({ 
+			showRegenerateModal: false,
+			regenerateModalData: null
+		});
+	},
+	
+	// Smart regeneration with localStorage history tracking
+	regenerateWithHistory: (
+		componentType: 'dal' | 'veg',
+		currentItem: string,
+		availableItems: string[],
+		dayIndex: number,
+		mealType: 'lunch' | 'dinner'
+	): string => {
+		// Get regeneration history from localStorage
+		const historyKey = `regeneration_history_${componentType}`;
+		const history = JSON.parse(localStorage.getItem(historyKey) || '[]') as string[];
+		
+		// Get previous day's item (very low probability)
+		const previousDayItem = get().getPreviousDayItem(dayIndex, componentType);
+		
+		// Filter out recent regeneration history (last 3)
+		const filteredItems = availableItems.filter(item => !history.includes(item));
+		
+		// If no items left after filtering, use all available items
+		const itemsToChooseFrom = filteredItems.length > 0 ? filteredItems : availableItems;
+		
+		// Remove current item to ensure we get something different
+		const differentItems = itemsToChooseFrom.filter(item => item !== currentItem);
+		
+		// If no different items available, use all items except current
+		const finalItems = differentItems.length > 0 ? differentItems : itemsToChooseFrom;
+		
+		if (finalItems.length === 0) {
+			// Fallback: return current item if no options
+			return currentItem;
+		}
+		
+		// Smart selection with previous day consideration
+		let selectedItem: string;
+		
+		// 5% chance to select previous day's item (very low probability)
+		if (previousDayItem && Math.random() < 0.05 && finalItems.includes(previousDayItem)) {
+			selectedItem = previousDayItem;
+		} else {
+			// 70% random, 30% systematic selection
+			if (Math.random() < 0.7) {
+				// Random selection from available items
+				selectedItem = finalItems[Math.floor(Math.random() * finalItems.length)];
+			} else {
+				// Systematic selection: use day index to cycle through items
+				const systematicIndex = (dayIndex + (mealType === 'lunch' ? 0 : 1)) % finalItems.length;
+				selectedItem = finalItems[systematicIndex];
+			}
+		}
+		
+		// Update regeneration history in localStorage
+		get().updateRegenerationHistory(componentType, selectedItem);
+		
+		return selectedItem;
+	},
+	
+	// Get previous day's item for low probability selection
+	getPreviousDayItem: (currentDayIndex: number, componentType: 'dal' | 'veg'): string | null => {
+		const week = get().week;
+		const previousDayIndex = currentDayIndex - 1;
+		
+		if (previousDayIndex >= 0 && week[previousDayIndex]) {
+			const previousDay = week[previousDayIndex];
+			// Get the most recent item from previous day (lunch or dinner)
+			if (previousDay.lunch && previousDay.lunch.length > 0) {
+				return previousDay.lunch[componentType === 'dal' ? 0 : 1];
+			}
+			if (previousDay.dinner && previousDay.dinner.length > 0) {
+				return previousDay.dinner[componentType === 'dal' ? 0 : 1];
+			}
+		}
+		
+		return null;
+	},
+	
+	// Update regeneration history in localStorage (maintains last 3 items)
+	updateRegenerationHistory: (componentType: 'dal' | 'veg', newItem: string): void => {
+		const historyKey = `regeneration_history_${componentType}`;
+		const history = JSON.parse(localStorage.getItem(historyKey) || '[]') as string[];
+		
+		// Add new item
+		history.push(newItem);
+		
+		// Keep only last 3 items
+		const updatedHistory = history.slice(-3);
+		
+		// Save back to localStorage
+		localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
+	},
+	
+	// Clear regeneration history (called when app closes/refreshes)
+	clearRegenerationHistory: (): void => {
+		localStorage.removeItem('regeneration_history_dal');
+		localStorage.removeItem('regeneration_history_veg');
 	}
 }));
