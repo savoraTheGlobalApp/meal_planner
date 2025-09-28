@@ -60,7 +60,7 @@ function formatNextDayMessage(): { title: string; body: string } {
     if (!meal) {
 		return {
             title: 'Set your preferences',
-            body: 'You haven\'t generated a menu yet. Pick your favorites and create your 7-day menu.'
+            body: 'Add or update your preferences. We\'re working to get you a menu that you\'ll love.'
 		};
 	}
 
